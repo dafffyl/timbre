@@ -1,0 +1,25 @@
+# Xcode — artefacts de build et état spécifique au développeur
+build/
+DerivedData/
+*.moved-aside
+*.xcuserstate
+*.xcscmblueprint
+xcuserdata/
+
+# Swift Package Manager — cache local régénéré à chaque build
+# (Package.resolved N'EST PAS ignoré : il pin les versions de dépendances,
+# on le commit pour des builds reproductibles)
+.build/
+.swiftpm/
+
+# macOS
+.DS_Store
+
+# Secrets et configuration locale non versionnée
+.env
+.env.local
+*.xcconfig.local
+
+# Résultats de tests, profiling, symboles de debug
+*.xcresult
+*.dSYM.zip
