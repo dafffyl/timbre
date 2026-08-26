@@ -23,3 +23,7 @@ xcuserdata/
 # Résultats de tests, profiling, symboles de debug
 *.xcresult
 *.dSYM.zip
+
+# Projets jetables de la Phase 0 (docs/spikes/ garde le résultat qui compte)
+/TimbreSpike/
+/TimbreDiarizationSpike/
