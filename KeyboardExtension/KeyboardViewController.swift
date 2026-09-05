@@ -11,11 +11,21 @@ class KeyboardViewController: UIInputViewController {
 
     @IBOutlet var nextKeyboardButton: UIButton!
 
+    private let viewModel = DictationViewModel()
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
         setUpNextKeyboardButton()
-        setUpAzertyLayout()
+        setUpKeyboardView()
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+
+        if let text = viewModel.checkForUpdate(hasFullAccess: hasFullAccess) {
+            textDocumentProxy.insertText(text)
+        }
     }
 
     private func setUpNextKeyboardButton() {
@@ -29,8 +39,15 @@ class KeyboardViewController: UIInputViewController {
         self.nextKeyboardButton.bottomAnchor.constraint(equalTo: self.view.bottomAnchor).isActive = true
     }
 
-    private func setUpAzertyLayout() {
-        let hostingController = UIHostingController(rootView: KeyboardView(layout: .azerty))
+    private func setUpKeyboardView() {
+        let keyboardView = KeyboardView(
+            layout: .azerty,
+            viewModel: viewModel,
+            onMicTap: { [weak self] in self?.startDictation() },
+            onCancelTap: { [weak self] in self?.viewModel.cancel() },
+            onDismissError: { [weak self] in self?.viewModel.dismissError() }
+        )
+        let hostingController = UIHostingController(rootView: keyboardView)
         addChild(hostingController)
         hostingController.view.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(hostingController.view)
@@ -41,6 +58,18 @@ class KeyboardViewController: UIInputViewController {
             hostingController.view.bottomAnchor.constraint(equalTo: nextKeyboardButton.topAnchor),
         ])
         hostingController.didMove(toParent: self)
+    }
+
+    private func startDictation() {
+        guard let url = viewModel.startDictation(hasFullAccess: hasFullAccess) else { return }
+
+        // extensionContext.open() est réservé aux widgets Today ; l'action
+        // openURL de SwiftUI, elle, fonctionne depuis une extension clavier
+        // (cf. docs/spikes/keyboard-app-roundtrip.md).
+        Task { @MainActor in
+            let environment = EnvironmentValues()
+            environment.openURL(url)
+        }
     }
 
     override func viewWillLayoutSubviews() {
