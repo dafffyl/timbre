@@ -17,6 +17,9 @@ jobs:
       - name: Vérifier la règle de dépendance du clavier
         run: ./scripts/check-keyboard-dependencies.sh
 
+      - name: Lister les versions de Xcode disponibles
+        run: ls /Applications | grep Xcode
+
       - name: Build
         run: |
           xcodebuild build \
