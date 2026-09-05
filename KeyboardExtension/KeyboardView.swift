@@ -1,15 +1,16 @@
 import SwiftUI
 import TimbreCore
 
-/// Rendu purement visuel du clavier — Phase 1 valide la plomberie
-/// (build, dépendances, CI), pas la fonctionnalité. Aucune touche n'insère
-/// de texte, le bouton micro n'a aucune action : ça arrive en Phase 4.
 struct KeyboardView: View {
     let layout: KeyboardLayout
+    var viewModel: DictationViewModel
+    let onMicTap: () -> Void
+    let onCancelTap: () -> Void
+    let onDismissError: () -> Void
 
     var body: some View {
         VStack(spacing: 6) {
-            micPlaceholder
+            statusBar
 
             ForEach(Array(layout.rows.enumerated()), id: \.offset) { _, row in
                 HStack(spacing: 4) {
@@ -26,17 +27,64 @@ struct KeyboardView: View {
         .padding(6)
     }
 
-    private var micPlaceholder: some View {
-        Image(systemName: "mic.fill")
-            .font(.title2)
-            .foregroundStyle(.secondary)
-            .frame(maxWidth: .infinity)
+    @ViewBuilder
+    private var statusBar: some View {
+        switch viewModel.state {
+        case .idle:
+            Button(action: onMicTap) {
+                Image(systemName: "mic.fill")
+                    .font(.title2)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 8)
+                    .background(Color(.tertiarySystemBackground))
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+            }
+            .buttonStyle(.plain)
+
+        case .fullAccessRequired:
+            Text("Autorise l'accès complet dans Réglages pour dicter")
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 8)
+                .background(Color(.tertiarySystemBackground))
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+
+        case .waiting:
+            HStack {
+                ProgressView()
+                Text("En attente de Timbre…")
+                    .font(.caption)
+                Spacer()
+                Button("Annuler", action: onCancelTap)
+                    .font(.caption)
+            }
+            .padding(.horizontal, 8)
             .padding(.vertical, 8)
             .background(Color(.tertiarySystemBackground))
             .clipShape(RoundedRectangle(cornerRadius: 8))
+
+        case .error(let message):
+            Button(action: onDismissError) {
+                HStack {
+                    Text(message)
+                        .font(.caption2)
+                        .foregroundStyle(.red)
+                    Spacer()
+                    Text("OK")
+                        .font(.caption2.bold())
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 8)
+                .background(Color(.tertiarySystemBackground))
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+            }
+            .buttonStyle(.plain)
+        }
     }
 }
 
 #Preview {
-    KeyboardView(layout: .azerty)
+    KeyboardView(layout: .azerty, viewModel: DictationViewModel(), onMicTap: {}, onCancelTap: {}, onDismissError: {})
 }

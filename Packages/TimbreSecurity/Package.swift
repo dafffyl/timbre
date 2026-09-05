@@ -7,7 +7,10 @@ let package = Package(
     products: [
         .library(name: "TimbreSecurity", targets: ["TimbreSecurity"])
     ],
+    dependencies: [
+        .package(path: "../TimbreCore")
+    ],
     targets: [
-        .target(name: "TimbreSecurity")
+        .target(name: "TimbreSecurity", dependencies: ["TimbreCore"])
     ]
 )

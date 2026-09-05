@@ -53,6 +53,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		370E52AC304C182200FEF2AC /* Timbre.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Timbre.entitlements; sourceTree = "<group>"; };
+		370E52AE304C185B00FEF2AC /* Timbre-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "Timbre-Info.plist"; sourceTree = "<group>"; };
 		374B49FE303F8EF90034B5D3 /* Timbre.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Timbre.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		374B4A0B303F8EFB0034B5D3 /* TimbreTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TimbreTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		374B4A15303F8EFB0034B5D3 /* TimbreUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TimbreUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -134,6 +136,8 @@
 		374B49F5303F8EF90034B5D3 = {
 			isa = PBXGroup;
 			children = (
+				370E52AE304C185B00FEF2AC /* Timbre-Info.plist */,
+				370E52AC304C182200FEF2AC /* Timbre.entitlements */,
 				374B4A00303F8EF90034B5D3 /* App */,
 				374B4A0E303F8EFB0034B5D3 /* TimbreTests */,
 				374B4A18303F8EFB0034B5D3 /* TimbreUITests */,
@@ -519,11 +523,13 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Timbre.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = LRAHJLQF7Y;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Timbre-Info.plist";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -551,11 +557,13 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Timbre.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = LRAHJLQF7Y;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Timbre-Info.plist";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -665,6 +673,7 @@
 		374B4A36303F90240034B5D3 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = KeyboardExtension/KeyboardExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = LRAHJLQF7Y;
@@ -693,6 +702,7 @@
 		374B4A37303F90240034B5D3 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = KeyboardExtension/KeyboardExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = LRAHJLQF7Y;
