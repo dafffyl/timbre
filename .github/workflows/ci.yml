@@ -1,0 +1,26 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: macos-15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Vérifier la règle de dépendance du clavier
+        run: ./scripts/check-keyboard-dependencies.sh
+
+      - name: Build
+        run: |
+          xcodebuild build \
+            -project Timbre.xcodeproj \
+            -scheme Timbre \
+            -destination 'generic/platform=iOS' \
+            CODE_SIGNING_ALLOWED=NO
