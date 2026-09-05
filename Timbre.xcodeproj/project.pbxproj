@@ -1,0 +1,806 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		374B4A33303F90240034B5D3 /* KeyboardExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 374B4A2C303F90240034B5D3 /* KeyboardExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		374B4A3C303F92760034B5D3 /* TimbreCore in Frameworks */ = {isa = PBXBuildFile; productRef = 374B4A3B303F92760034B5D3 /* TimbreCore */; };
+		374B4A3E303F92BE0034B5D3 /* TimbreCore in Frameworks */ = {isa = PBXBuildFile; productRef = 374B4A3D303F92BE0034B5D3 /* TimbreCore */; };
+		374B4A41303F93840034B5D3 /* TimbreSecurity in Frameworks */ = {isa = PBXBuildFile; productRef = 374B4A40303F93840034B5D3 /* TimbreSecurity */; };
+		374B4A43303F93950034B5D3 /* TimbreSecurity in Frameworks */ = {isa = PBXBuildFile; productRef = 374B4A42303F93950034B5D3 /* TimbreSecurity */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		374B4A0C303F8EFB0034B5D3 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 374B49F6303F8EF90034B5D3 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 374B49FD303F8EF90034B5D3;
+			remoteInfo = Timbre;
+		};
+		374B4A16303F8EFB0034B5D3 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 374B49F6303F8EF90034B5D3 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 374B49FD303F8EF90034B5D3;
+			remoteInfo = Timbre;
+		};
+		374B4A31303F90240034B5D3 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 374B49F6303F8EF90034B5D3 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 374B4A2B303F90240034B5D3;
+			remoteInfo = KeyboardExtension;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		374B4A38303F90240034B5D3 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				374B4A33303F90240034B5D3 /* KeyboardExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		374B49FE303F8EF90034B5D3 /* Timbre.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Timbre.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		374B4A0B303F8EFB0034B5D3 /* TimbreTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TimbreTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		374B4A15303F8EFB0034B5D3 /* TimbreUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TimbreUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		374B4A2C303F90240034B5D3 /* KeyboardExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = KeyboardExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		374B4A34303F90240034B5D3 /* Exceptions for "KeyboardExtension" folder in "KeyboardExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 374B4A2B303F90240034B5D3 /* KeyboardExtension */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		374B4A00303F8EF90034B5D3 /* App */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = App;
+			sourceTree = "<group>";
+		};
+		374B4A0E303F8EFB0034B5D3 /* TimbreTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = TimbreTests;
+			sourceTree = "<group>";
+		};
+		374B4A18303F8EFB0034B5D3 /* TimbreUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = TimbreUITests;
+			sourceTree = "<group>";
+		};
+		374B4A2D303F90240034B5D3 /* KeyboardExtension */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				374B4A34303F90240034B5D3 /* Exceptions for "KeyboardExtension" folder in "KeyboardExtension" target */,
+			);
+			path = KeyboardExtension;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		374B49FB303F8EF90034B5D3 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				374B4A3E303F92BE0034B5D3 /* TimbreCore in Frameworks */,
+				374B4A41303F93840034B5D3 /* TimbreSecurity in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		374B4A08303F8EFB0034B5D3 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		374B4A12303F8EFB0034B5D3 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		374B4A29303F90240034B5D3 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				374B4A3C303F92760034B5D3 /* TimbreCore in Frameworks */,
+				374B4A43303F93950034B5D3 /* TimbreSecurity in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		374B49F5303F8EF90034B5D3 = {
+			isa = PBXGroup;
+			children = (
+				374B4A00303F8EF90034B5D3 /* App */,
+				374B4A0E303F8EFB0034B5D3 /* TimbreTests */,
+				374B4A18303F8EFB0034B5D3 /* TimbreUITests */,
+				374B4A2D303F90240034B5D3 /* KeyboardExtension */,
+				374B4A3A303F92760034B5D3 /* Frameworks */,
+				374B49FF303F8EF90034B5D3 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		374B49FF303F8EF90034B5D3 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				374B49FE303F8EF90034B5D3 /* Timbre.app */,
+				374B4A0B303F8EFB0034B5D3 /* TimbreTests.xctest */,
+				374B4A15303F8EFB0034B5D3 /* TimbreUITests.xctest */,
+				374B4A2C303F90240034B5D3 /* KeyboardExtension.appex */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		374B4A3A303F92760034B5D3 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		374B49FD303F8EF90034B5D3 /* Timbre */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 374B4A1F303F8EFB0034B5D3 /* Build configuration list for PBXNativeTarget "Timbre" */;
+			buildPhases = (
+				374B49FA303F8EF90034B5D3 /* Sources */,
+				374B49FB303F8EF90034B5D3 /* Frameworks */,
+				374B49FC303F8EF90034B5D3 /* Resources */,
+				374B4A38303F90240034B5D3 /* Embed Foundation Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				374B4A32303F90240034B5D3 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				374B4A00303F8EF90034B5D3 /* App */,
+			);
+			name = Timbre;
+			packageProductDependencies = (
+				374B4A3D303F92BE0034B5D3 /* TimbreCore */,
+				374B4A40303F93840034B5D3 /* TimbreSecurity */,
+			);
+			productName = Timbre;
+			productReference = 374B49FE303F8EF90034B5D3 /* Timbre.app */;
+			productType = "com.apple.product-type.application";
+		};
+		374B4A0A303F8EFB0034B5D3 /* TimbreTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 374B4A22303F8EFB0034B5D3 /* Build configuration list for PBXNativeTarget "TimbreTests" */;
+			buildPhases = (
+				374B4A07303F8EFB0034B5D3 /* Sources */,
+				374B4A08303F8EFB0034B5D3 /* Frameworks */,
+				374B4A09303F8EFB0034B5D3 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				374B4A0D303F8EFB0034B5D3 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				374B4A0E303F8EFB0034B5D3 /* TimbreTests */,
+			);
+			name = TimbreTests;
+			packageProductDependencies = (
+			);
+			productName = TimbreTests;
+			productReference = 374B4A0B303F8EFB0034B5D3 /* TimbreTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		374B4A14303F8EFB0034B5D3 /* TimbreUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 374B4A25303F8EFB0034B5D3 /* Build configuration list for PBXNativeTarget "TimbreUITests" */;
+			buildPhases = (
+				374B4A11303F8EFB0034B5D3 /* Sources */,
+				374B4A12303F8EFB0034B5D3 /* Frameworks */,
+				374B4A13303F8EFB0034B5D3 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				374B4A17303F8EFB0034B5D3 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				374B4A18303F8EFB0034B5D3 /* TimbreUITests */,
+			);
+			name = TimbreUITests;
+			packageProductDependencies = (
+			);
+			productName = TimbreUITests;
+			productReference = 374B4A15303F8EFB0034B5D3 /* TimbreUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+		374B4A2B303F90240034B5D3 /* KeyboardExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 374B4A35303F90240034B5D3 /* Build configuration list for PBXNativeTarget "KeyboardExtension" */;
+			buildPhases = (
+				374B4A28303F90240034B5D3 /* Sources */,
+				374B4A29303F90240034B5D3 /* Frameworks */,
+				374B4A2A303F90240034B5D3 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				374B4A2D303F90240034B5D3 /* KeyboardExtension */,
+			);
+			name = KeyboardExtension;
+			packageProductDependencies = (
+				374B4A3B303F92760034B5D3 /* TimbreCore */,
+				374B4A42303F93950034B5D3 /* TimbreSecurity */,
+			);
+			productName = KeyboardExtension;
+			productReference = 374B4A2C303F90240034B5D3 /* KeyboardExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		374B49F6303F8EF90034B5D3 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2620;
+				LastUpgradeCheck = 2620;
+				TargetAttributes = {
+					374B49FD303F8EF90034B5D3 = {
+						CreatedOnToolsVersion = 26.2;
+					};
+					374B4A0A303F8EFB0034B5D3 = {
+						CreatedOnToolsVersion = 26.2;
+						TestTargetID = 374B49FD303F8EF90034B5D3;
+					};
+					374B4A14303F8EFB0034B5D3 = {
+						CreatedOnToolsVersion = 26.2;
+						TestTargetID = 374B49FD303F8EF90034B5D3;
+					};
+					374B4A2B303F90240034B5D3 = {
+						CreatedOnToolsVersion = 26.2;
+					};
+				};
+			};
+			buildConfigurationList = 374B49F9303F8EF90034B5D3 /* Build configuration list for PBXProject "Timbre" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 374B49F5303F8EF90034B5D3;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				374B4A39303F918D0034B5D3 /* XCLocalSwiftPackageReference "Packages/TimbreCore" */,
+				374B4A3F303F93640034B5D3 /* XCLocalSwiftPackageReference "Packages/TimbreSecurity" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 374B49FF303F8EF90034B5D3 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				374B49FD303F8EF90034B5D3 /* Timbre */,
+				374B4A0A303F8EFB0034B5D3 /* TimbreTests */,
+				374B4A14303F8EFB0034B5D3 /* TimbreUITests */,
+				374B4A2B303F90240034B5D3 /* KeyboardExtension */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		374B49FC303F8EF90034B5D3 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		374B4A09303F8EFB0034B5D3 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		374B4A13303F8EFB0034B5D3 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		374B4A2A303F90240034B5D3 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		374B49FA303F8EF90034B5D3 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		374B4A07303F8EFB0034B5D3 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		374B4A11303F8EFB0034B5D3 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		374B4A28303F90240034B5D3 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		374B4A0D303F8EFB0034B5D3 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 374B49FD303F8EF90034B5D3 /* Timbre */;
+			targetProxy = 374B4A0C303F8EFB0034B5D3 /* PBXContainerItemProxy */;
+		};
+		374B4A17303F8EFB0034B5D3 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 374B49FD303F8EF90034B5D3 /* Timbre */;
+			targetProxy = 374B4A16303F8EFB0034B5D3 /* PBXContainerItemProxy */;
+		};
+		374B4A32303F90240034B5D3 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 374B4A2B303F90240034B5D3 /* KeyboardExtension */;
+			targetProxy = 374B4A31303F90240034B5D3 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		374B4A1D303F8EFB0034B5D3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = LRAHJLQF7Y;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		374B4A1E303F8EFB0034B5D3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = LRAHJLQF7Y;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		374B4A20303F8EFB0034B5D3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = LRAHJLQF7Y;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = fr.dafffyl.timbretest1;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		374B4A21303F8EFB0034B5D3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = LRAHJLQF7Y;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = fr.dafffyl.timbretest1;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		374B4A23303F8EFB0034B5D3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = LRAHJLQF7Y;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = fr.dafffyl.TimbreTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Timbre.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Timbre";
+			};
+			name = Debug;
+		};
+		374B4A24303F8EFB0034B5D3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = LRAHJLQF7Y;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = fr.dafffyl.TimbreTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Timbre.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Timbre";
+			};
+			name = Release;
+		};
+		374B4A26303F8EFB0034B5D3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = LRAHJLQF7Y;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = fr.dafffyl.TimbreUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Timbre;
+			};
+			name = Debug;
+		};
+		374B4A27303F8EFB0034B5D3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = LRAHJLQF7Y;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = fr.dafffyl.TimbreUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Timbre;
+			};
+			name = Release;
+		};
+		374B4A36303F90240034B5D3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = LRAHJLQF7Y;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = KeyboardExtension/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = KeyboardExtension;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = fr.dafffyl.timbretest1.keyboard;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		374B4A37303F90240034B5D3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = LRAHJLQF7Y;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = KeyboardExtension/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = KeyboardExtension;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = fr.dafffyl.timbretest1.keyboard;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		374B49F9303F8EF90034B5D3 /* Build configuration list for PBXProject "Timbre" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				374B4A1D303F8EFB0034B5D3 /* Debug */,
+				374B4A1E303F8EFB0034B5D3 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		374B4A1F303F8EFB0034B5D3 /* Build configuration list for PBXNativeTarget "Timbre" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				374B4A20303F8EFB0034B5D3 /* Debug */,
+				374B4A21303F8EFB0034B5D3 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		374B4A22303F8EFB0034B5D3 /* Build configuration list for PBXNativeTarget "TimbreTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				374B4A23303F8EFB0034B5D3 /* Debug */,
+				374B4A24303F8EFB0034B5D3 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		374B4A25303F8EFB0034B5D3 /* Build configuration list for PBXNativeTarget "TimbreUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				374B4A26303F8EFB0034B5D3 /* Debug */,
+				374B4A27303F8EFB0034B5D3 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		374B4A35303F90240034B5D3 /* Build configuration list for PBXNativeTarget "KeyboardExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				374B4A36303F90240034B5D3 /* Debug */,
+				374B4A37303F90240034B5D3 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		374B4A39303F918D0034B5D3 /* XCLocalSwiftPackageReference "Packages/TimbreCore" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/TimbreCore;
+		};
+		374B4A3F303F93640034B5D3 /* XCLocalSwiftPackageReference "Packages/TimbreSecurity" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/TimbreSecurity;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		374B4A3B303F92760034B5D3 /* TimbreCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 374B4A39303F918D0034B5D3 /* XCLocalSwiftPackageReference "Packages/TimbreCore" */;
+			productName = TimbreCore;
+		};
+		374B4A3D303F92BE0034B5D3 /* TimbreCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 374B4A39303F918D0034B5D3 /* XCLocalSwiftPackageReference "Packages/TimbreCore" */;
+			productName = TimbreCore;
+		};
+		374B4A40303F93840034B5D3 /* TimbreSecurity */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 374B4A3F303F93640034B5D3 /* XCLocalSwiftPackageReference "Packages/TimbreSecurity" */;
+			productName = TimbreSecurity;
+		};
+		374B4A42303F93950034B5D3 /* TimbreSecurity */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 374B4A3F303F93640034B5D3 /* XCLocalSwiftPackageReference "Packages/TimbreSecurity" */;
+			productName = TimbreSecurity;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 374B49F6303F8EF90034B5D3 /* Project object */;
+}
