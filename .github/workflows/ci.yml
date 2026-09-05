@@ -20,6 +20,13 @@ jobs:
       - name: Sélectionner Xcode 26.2
         run: sudo xcode-select -s /Applications/Xcode_26.2.app
 
+      - name: Tests unitaires des packages
+        run: |
+          for package in Packages/TimbreCore Packages/TimbreTranscription; do
+            echo "→ swift test dans $package"
+            (cd "$package" && swift test)
+          done
+
       - name: Build
         run: |
           xcodebuild build \
