@@ -50,10 +50,10 @@ struct KeyboardView: View {
                 .background(Color(.tertiarySystemBackground))
                 .clipShape(RoundedRectangle(cornerRadius: 8))
 
-        case .waiting:
+        case .waiting(let label):
             HStack {
                 ProgressView()
-                Text("En attente de Timbre…")
+                Text(label)
                     .font(.caption)
                 Spacer()
                 Button("Annuler", action: onCancelTap)

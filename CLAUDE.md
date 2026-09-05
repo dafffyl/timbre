@@ -59,9 +59,20 @@ le signal. Le clavier ne fait jamais de réseau ni d'audio lui-même.
 
 ## Commandes
 
-⚠️ Phase 1 pas encore commencée — pas de `Timbre.xcodeproj`, pas de CI, pas de
-config lint. Rien à lister ici tant que ça n'existe pas réellement. À remplir
-dès que la Phase 1 les crée (build, test, lint, format, run sur appareil).
+- **Build** (app + clavier) : ouvrir `Timbre.xcodeproj` dans Xcode, scheme
+  `Timbre`, ▶️ Run sur un appareil physique (obligatoire, voir invariants).
+  En CLI (ce que fait la CI) :
+  `xcodebuild build -project Timbre.xcodeproj -scheme Timbre -destination 'generic/platform=iOS' CODE_SIGNING_ALLOWED=NO`
+- **Tests des packages** : `cd Packages/<Nom> && swift test` (ex.
+  `TimbreCore`, `TimbreTranscription`). Nécessite `xcode-select` pointé sur
+  la vraie app Xcode, pas les Command Line Tools seules (sinon le framework
+  `Testing` est introuvable).
+- **Règle de dépendance du clavier** : `./scripts/check-keyboard-dependencies.sh`
+- **Lint/format** : pas encore configuré.
+
+⚠️ Après un changement de dossier/déplacement du repo : supprimer les
+`.build/` de chaque package avant `swift test` (ils gardent des chemins
+absolus en cache).
 
 ## Conventions
 
