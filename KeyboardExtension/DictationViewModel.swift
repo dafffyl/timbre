@@ -15,12 +15,16 @@ import TimbreSecurity
 /// C5) et son process est suspendu — aucun timer ne peut tourner pendant ce
 /// temps. Le seul moment où l'extension est réellement vivante pour
 /// vérifier quoi que ce soit, c'est à sa réapparition (`viewWillAppear`).
+///
+/// Le timeout est par phase (basé sur `statusUpdatedAt`, pas `requestedAt`)
+/// : un enregistrement long n'est pas une erreur (l'utilisateur contrôle sa
+/// durée), mais un `.pending` ou un `.transcribing` qui traîne l'est.
 @Observable
 final class DictationViewModel {
     enum State: Equatable {
         case idle
         case fullAccessRequired
-        case waiting
+        case waiting(String)
         case error(String)
     }
 
@@ -28,7 +32,8 @@ final class DictationViewModel {
 
     private let channel = DictationChannel()
     private let pendingKey = "fr.dafffyl.timbre.pendingRequestID"
-    private let timeout: TimeInterval = 15
+    private let pendingTimeout: TimeInterval = 20
+    private let transcribingTimeout: TimeInterval = 30
 
     /// À appeler à chaque apparition du clavier (`viewWillAppear`). Retourne
     /// le texte à insérer si un résultat prêt correspond au jeton attendu,
@@ -40,9 +45,9 @@ final class DictationViewModel {
             return nil
         }
 
-        // Une erreur reste affichée jusqu'à ce que l'utilisateur la valide
-        // explicitement (dismissError) — sinon le prochain viewWillAppear
-        // l'effacerait avant même que l'utilisateur ait pu la lire.
+        // Une erreur reste affichée jusqu'à validation explicite
+        // (dismissError) — sinon le prochain viewWillAppear l'effacerait
+        // avant même que l'utilisateur ait pu la lire.
         if case .error = state {
             return nil
         }
@@ -59,14 +64,26 @@ final class DictationViewModel {
             return nil
         }
 
+        let elapsedSinceStatusChange = Date().timeIntervalSince(request.statusUpdatedAt)
+
         switch request.status {
         case .pending:
-            if Date().timeIntervalSince(request.requestedAt) > timeout {
-                clearPending()
-                channel.clear()
-                state = .error("Délai dépassé — réessaie.")
+            if elapsedSinceStatusChange > pendingTimeout {
+                giveUp(message: "Timbre n'a pas répondu — réessaie.")
             } else {
-                state = .waiting
+                state = .waiting("Ouverture de Timbre…")
+            }
+            return nil
+
+        case .recording:
+            state = .waiting("Enregistrement en cours…")
+            return nil
+
+        case .transcribing:
+            if elapsedSinceStatusChange > transcribingTimeout {
+                giveUp(message: "La transcription a pris trop de temps — réessaie.")
+            } else {
+                state = .waiting("Transcription en cours…")
             }
             return nil
 
@@ -79,7 +96,7 @@ final class DictationViewModel {
         case .failed:
             clearPending()
             channel.clear()
-            state = .error("Échec côté app — réessaie.")
+            state = .error(request.errorMessage ?? "Échec côté app — réessaie.")
             return nil
         }
     }
@@ -95,7 +112,7 @@ final class DictationViewModel {
         let newID = UUID()
         UserDefaults.standard.set(newID.uuidString, forKey: pendingKey)
         channel.write(DictationRequest(id: newID))
-        state = .waiting
+        state = .waiting("Ouverture de Timbre…")
         return URL(string: "timbre://dictate")
     }
 
@@ -109,6 +126,12 @@ final class DictationViewModel {
     /// depuis `.error`, volontairement manuel (voir `checkForUpdate`).
     func dismissError() {
         state = .idle
+    }
+
+    private func giveUp(message: String) {
+        clearPending()
+        channel.clear()
+        state = .error(message)
     }
 
     private func currentPendingID() -> UUID? {
