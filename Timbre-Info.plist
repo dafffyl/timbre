@@ -2,8 +2,6 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>NSMicrophoneUsageDescription</key>
-	<string>Timbre a besoin du micro pour dicter le texte que tu insères dans le clavier.</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
@@ -16,6 +14,10 @@
 				<string>timbre</string>
 			</array>
 		</dict>
+	</array>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>audio</string>
 	</array>
 </dict>
 </plist>

@@ -35,6 +35,10 @@ acoustique que la diarisation exploite. Le nom décrit le mécanisme, pas l'usag
   un aller-retour clavier → app conteneur (bug Apple reconnu, FB22247647, sans
   solution). Le retour manuel doit être assumé dans l'UI, jamais promis comme
   automatique. Ouverture à chaud quasi instantanée (0,11s), à froid ~9s.
+  **Nuance (ADR-0002)** : ça ne bloque que le retour visuel — un enregistrement
+  démarré avant le passage en arrière-plan continue réellement (Background
+  Mode Audio, confirmé par test), donc l'utilisateur peut revenir à son app
+  d'origine pendant que ça enregistre encore.
 
 ## Architecture
 
