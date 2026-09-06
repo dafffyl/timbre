@@ -9,6 +9,7 @@ struct KeyboardView: View {
     let onKeyTap: (String) -> Void
     let onDeleteTap: () -> Void
     let onMicTap: () -> Void
+    let onStopRecordingTap: () -> Void
     let onCancelTap: () -> Void
     let onDismissError: () -> Void
     let onHapticTap: () -> Void
@@ -82,19 +83,29 @@ struct KeyboardView: View {
                 .font(.caption2)
                 .foregroundStyle(.orange)
 
-        case .waiting(let label):
-            HStack(spacing: 8) {
-                ProgressView().tint(.white)
-                Text(label)
-                    .font(.caption)
-                    .foregroundStyle(.white)
+        case .opening:
+            progressPill(label: "Ouverture de Timbre…") {
                 Button("Annuler", action: onCancelTap)
                     .font(.caption)
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 6)
-            .background(Color.white.opacity(0.15))
-            .clipShape(Capsule())
+
+        case .recording:
+            progressPill(label: "Enregistrement…") {
+                HStack(spacing: 10) {
+                    Button(action: onCancelTap) {
+                        Image(systemName: "xmark.circle.fill")
+                    }
+                    Button(action: onStopRecordingTap) {
+                        Image(systemName: "checkmark.circle.fill")
+                    }
+                }
+                .font(.title3)
+            }
+
+        case .transcribing:
+            progressPill(label: "Transcription…") {
+                EmptyView()
+            }
 
         case .error(let message):
             Button(action: onDismissError) {
@@ -111,6 +122,20 @@ struct KeyboardView: View {
             }
             .buttonStyle(.plain)
         }
+    }
+
+    private func progressPill(label: String, @ViewBuilder trailing: () -> some View) -> some View {
+        HStack(spacing: 8) {
+            ProgressView().tint(.white)
+            Text(label)
+                .font(.caption)
+                .foregroundStyle(.white)
+            trailing()
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 6)
+        .background(Color.white.opacity(0.15))
+        .clipShape(Capsule())
     }
 
     private func letterKey(_ key: String) -> some View {
@@ -186,6 +211,7 @@ struct KeyboardView: View {
         onKeyTap: { _ in },
         onDeleteTap: {},
         onMicTap: {},
+        onStopRecordingTap: {},
         onCancelTap: {},
         onDismissError: {},
         onHapticTap: {}
