@@ -5,6 +5,7 @@
 
 import UIKit
 import SwiftUI
+import CoreFoundation
 import TimbreCore
 
 class KeyboardViewController: UIInputViewController {
@@ -88,16 +89,35 @@ class KeyboardViewController: UIInputViewController {
         impactGenerator.impactOccurred()
     }
 
+    /// Poste toujours la notification Darwin d'abord (coût quasi nul si
+    /// personne n'écoute), attend un court délai, puis n'ouvre l'app que si
+    /// la requête est toujours `.pending` — c'est-à-dire que l'app n'était
+    /// pas chaude (voir `DictationController`, fenêtre de grâce de 30s côté
+    /// app). Si l'app a réagi à temps, aucune bascule visible.
     private func startDictation() {
-        guard let url = viewModel.startDictation(hasFullAccess: hasFullAccess) else { return }
+        guard let requestID = viewModel.prepareNewRequest(hasFullAccess: hasFullAccess) else { return }
+        postDarwinWake()
 
-        // extensionContext.open() est réservé aux widgets Today ; l'action
-        // openURL de SwiftUI, elle, fonctionne depuis une extension clavier
-        // (cf. docs/spikes/keyboard-app-roundtrip.md).
         Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(150))
+            guard let url = viewModel.coldWakeURLIfStillPending(requestID) else { return }
+
+            // extensionContext.open() est réservé aux widgets Today ; l'action
+            // openURL de SwiftUI, elle, fonctionne depuis une extension clavier
+            // (cf. docs/spikes/keyboard-app-roundtrip.md).
             let environment = EnvironmentValues()
             environment.openURL(url)
         }
+    }
+
+    private func postDarwinWake() {
+        CFNotificationCenterPostNotification(
+            CFNotificationCenterGetDarwinNotifyCenter(),
+            CFNotificationName("fr.dafffyl.timbre.wake" as CFString),
+            nil,
+            nil,
+            true
+        )
     }
 
     override func viewWillLayoutSubviews() {

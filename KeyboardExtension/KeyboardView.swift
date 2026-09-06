@@ -18,6 +18,13 @@ struct KeyboardView: View {
     /// clavier système — pas de verrouillage majuscules dans cette version.
     @State private var isShifted = false
 
+    /// Historique glissant des derniers niveaux reçus — on n'a qu'un
+    /// scalaire d'amplitude par tick (pas de vrai spectre de fréquences),
+    /// donc l'effet "onde" vient de faire défiler cet historique en barres,
+    /// pas d'une vraie analyse fréquentielle.
+    @State private var levelHistory: [Float] = []
+    private let waveformBarCount = 20
+
     private let keyBackground = Color(white: 0.30)
     private let cardBackground = Color(white: 0.15)
 
@@ -51,6 +58,11 @@ struct KeyboardView: View {
         .padding(8)
         .background(cardBackground)
         .preferredColorScheme(.dark)
+        .onChange(of: viewModel.state) { _, newState in
+            if newState != .recording {
+                levelHistory.removeAll()
+            }
+        }
     }
 
     private var topBar: some View {
@@ -90,16 +102,27 @@ struct KeyboardView: View {
             }
 
         case .recording:
-            progressPill(label: "Enregistrement…") {
-                HStack(spacing: 10) {
-                    Button(action: onCancelTap) {
-                        Image(systemName: "xmark.circle.fill")
-                    }
-                    Button(action: onStopRecordingTap) {
-                        Image(systemName: "checkmark.circle.fill")
-                    }
+            HStack(spacing: 10) {
+                waveform
+
+                Button(action: onCancelTap) {
+                    Image(systemName: "xmark.circle.fill")
                 }
-                .font(.title3)
+                Button(action: onStopRecordingTap) {
+                    Image(systemName: "checkmark.circle.fill")
+                }
+            }
+            .font(.title3)
+            .foregroundStyle(.white)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 6)
+            .background(Color.white.opacity(0.15))
+            .clipShape(Capsule())
+            .onChange(of: viewModel.audioLevel) { _, newLevel in
+                levelHistory.append(newLevel)
+                if levelHistory.count > waveformBarCount {
+                    levelHistory.removeFirst()
+                }
             }
 
         case .transcribing:
@@ -122,6 +145,21 @@ struct KeyboardView: View {
             }
             .buttonStyle(.plain)
         }
+    }
+
+    private var waveform: some View {
+        HStack(alignment: .center, spacing: 3) {
+            ForEach(Array(levelHistory.enumerated()), id: \.offset) { _, level in
+                RoundedRectangle(cornerRadius: 1.5)
+                    .fill(Color.white)
+                    .frame(width: 3, height: barHeight(for: level))
+            }
+        }
+        .frame(width: CGFloat(waveformBarCount) * 6, height: 24)
+    }
+
+    private func barHeight(for level: Float) -> CGFloat {
+        4 + CGFloat(level) * 20
     }
 
     private func progressPill(label: String, @ViewBuilder trailing: () -> some View) -> some View {

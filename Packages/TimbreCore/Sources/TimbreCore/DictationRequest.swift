@@ -30,12 +30,18 @@ public enum DictationStatus: String, Sendable, Codable {
 /// (ADR-0002) — l'app le lit à chaque bloc audio traité (toutes les
 /// ~90ms) pendant qu'elle est en arrière-plan, pas besoin d'une Darwin
 /// notification séparée pour un signal aussi fréquent.
+///
+/// `audioLevel` : niveau audio courant (0...1, échelle dB normalisée),
+/// mis à jour par l'app pendant `.recording` pour que le clavier — qui n'a
+/// et n'aura jamais accès au micro (C1) — puisse quand même afficher une
+/// onde qui réagit réellement à la voix, comme Wispr Flow.
 public struct DictationRequest: Sendable, Codable, Equatable {
     public let id: UUID
     public let requestedAt: Date
     public var status: DictationStatus
     public var statusUpdatedAt: Date
     public var stopRequested: Bool
+    public var audioLevel: Float
     public var resultText: String?
     public var errorMessage: String?
 
@@ -45,6 +51,7 @@ public struct DictationRequest: Sendable, Codable, Equatable {
         status: DictationStatus = .pending,
         statusUpdatedAt: Date? = nil,
         stopRequested: Bool = false,
+        audioLevel: Float = 0,
         resultText: String? = nil,
         errorMessage: String? = nil
     ) {
@@ -53,6 +60,7 @@ public struct DictationRequest: Sendable, Codable, Equatable {
         self.status = status
         self.statusUpdatedAt = statusUpdatedAt ?? requestedAt
         self.stopRequested = stopRequested
+        self.audioLevel = audioLevel
         self.resultText = resultText
         self.errorMessage = errorMessage
     }
