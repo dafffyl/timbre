@@ -30,6 +30,12 @@ final class DictationViewModel {
 
     private(set) var state: State = .idle
 
+    /// Niveau audio courant (0...1), poussé par l'app pendant `.recording`
+    /// (ADR-0002 + Phase 3.5 item 3) — seule façon pour le clavier d'afficher
+    /// une onde qui réagit à la voix sans jamais toucher lui-même au micro
+    /// (C1). Retombe à 0 dès qu'on quitte `.recording`.
+    private(set) var audioLevel: Float = 0
+
     /// Appelé quand un résultat prêt est trouvé pendant le polling — le
     /// view model n'a pas accès au `textDocumentProxy`, l'insertion reste
     /// la responsabilité du `KeyboardViewController`.
@@ -61,6 +67,7 @@ final class DictationViewModel {
         guard let pendingID = currentPendingID() else {
             stopPolling()
             state = .idle
+            audioLevel = 0
             return nil
         }
 
@@ -69,6 +76,7 @@ final class DictationViewModel {
             clearPending()
             stopPolling()
             state = .idle
+            audioLevel = 0
             return nil
         }
 
@@ -84,10 +92,12 @@ final class DictationViewModel {
 
         case .recording:
             state = .recording
+            audioLevel = request.audioLevel
             startPollingIfNeeded(hasFullAccess: hasFullAccess)
             return nil
 
         case .transcribing:
+            audioLevel = 0
             if Date().timeIntervalSince(request.statusUpdatedAt) > transcribingTimeout {
                 giveUp(message: "La transcription a pris trop de temps — réessaie.")
             } else {
@@ -100,19 +110,27 @@ final class DictationViewModel {
             clearPending()
             stopPolling()
             state = .idle
+            audioLevel = 0
             return request.resultText
 
         case .failed:
             clearPending()
             stopPolling()
             state = .error(request.errorMessage ?? "Échec côté app — réessaie.")
+            audioLevel = 0
             return nil
         }
     }
 
-    /// Démarre un nouveau cycle. Retourne l'URL à ouvrir si tout est prêt,
-    /// `nil` si Full Access manque (l'appelant ne doit alors rien ouvrir).
-    func startDictation(hasFullAccess: Bool) -> URL? {
+    /// Démarre un nouveau cycle. Écrit la requête et lance le polling tout
+    /// de suite — sans attendre un `viewWillAppear`, puisqu'avec la reprise
+    /// à chaud (notification Darwin, voir `KeyboardViewController`) le
+    /// clavier ne quitte parfois jamais l'écran. Retourne l'id de la
+    /// requête pour que l'appelant puisse ensuite vérifier, après son
+    /// propre délai, s'il faut ouvrir l'app ou non — `nil` si Full Access
+    /// manque (l'appelant ne doit alors rien faire d'autre).
+    @discardableResult
+    func prepareNewRequest(hasFullAccess: Bool) -> UUID? {
         guard hasFullAccess else {
             state = .fullAccessRequired
             return nil
@@ -122,6 +140,24 @@ final class DictationViewModel {
         UserDefaults.standard.set(newID.uuidString, forKey: pendingKey)
         channel.write(DictationRequest(id: newID))
         state = .opening
+        audioLevel = 0
+        startPollingIfNeeded(hasFullAccess: hasFullAccess)
+        return newID
+    }
+
+    /// À appeler après un court délai suivant `prepareNewRequest` : si la
+    /// requête est toujours `.pending`, l'app n'était pas chaude (fenêtre de
+    /// grâce expirée ou toute première dictée) — il faut l'ouvrir
+    /// explicitement. Si elle a déjà démarré l'enregistrement (reprise via
+    /// notification Darwin, sans bascule), retourne `nil` : rien à ouvrir.
+    func coldWakeURLIfStillPending(_ requestID: UUID) -> URL? {
+        guard currentPendingID() == requestID,
+            let request = channel.read(),
+            request.id == requestID,
+            request.status == .pending
+        else {
+            return nil
+        }
         return URL(string: "timbre://dictate")
     }
 
@@ -144,6 +180,7 @@ final class DictationViewModel {
         clearPending()
         channel.clear()
         state = .idle
+        audioLevel = 0
     }
 
     /// Valide/efface une erreur affichée — seul moyen de revenir à `idle`
@@ -157,7 +194,11 @@ final class DictationViewModel {
     /// pendant `.recording`/`.transcribing`, contrairement à l'ancien flux.
     private func startPollingIfNeeded(hasFullAccess: Bool) {
         guard pollTimer == nil else { return }
-        pollTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
+        // 0,1s pour matcher le rythme d'écriture de l'onde côté app
+        // (ContentView) pendant .recording — plus lent serait perceptible
+        // visuellement ; plus rapide n'apporterait rien, l'app n'écrit pas
+        // plus vite que ça.
+        pollTimer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [weak self] _ in
             guard let self else { return }
             if let text = self.checkForUpdate(hasFullAccess: hasFullAccess) {
                 self.onResultReady?(text)
@@ -175,6 +216,7 @@ final class DictationViewModel {
         stopPolling()
         channel.clear()
         state = .error(message)
+        audioLevel = 0
     }
 
     private func currentPendingID() -> UUID? {
