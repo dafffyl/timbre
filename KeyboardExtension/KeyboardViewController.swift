@@ -52,12 +52,17 @@ class KeyboardViewController: UIInputViewController {
     }
 
     private func setUpKeyboardView() {
+        viewModel.onResultReady = { [weak self] text in
+            self?.textDocumentProxy.insertText(text)
+        }
+
         let keyboardView = KeyboardView(
             layout: .azerty,
             viewModel: viewModel,
             onKeyTap: { [weak self] text in self?.textDocumentProxy.insertText(text) },
             onDeleteTap: { [weak self] in self?.textDocumentProxy.deleteBackward() },
             onMicTap: { [weak self] in self?.startDictation() },
+            onStopRecordingTap: { [weak self] in self?.viewModel.stopRecording() },
             onCancelTap: { [weak self] in self?.viewModel.cancel() },
             onDismissError: { [weak self] in self?.viewModel.dismissError() },
             onHapticTap: { [weak self] in self?.triggerHapticFeedback() }

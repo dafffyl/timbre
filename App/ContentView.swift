@@ -17,11 +17,109 @@ private enum RecordingUIState: Equatable {
     case failed(String)
 }
 
+/// Enregistre via `AVAudioEngine` plutôt que `AVAudioRecorder` — seule façon
+/// de garder le contrôle programmatique nécessaire pour lire l'App Group à
+/// intervalles réguliers pendant l'enregistrement (voir `ContentView`), tout
+/// en profitant de la survie en arrière-plan validée par ADR-0002.
+///
+/// `@unchecked Sendable` : `audioFile`/`converter`/`targetFormat` sont écrits
+/// une seule fois dans `start()`, avant l'installation du tap, puis seulement
+/// lus — jamais mutés — depuis le thread audio temps réel du tap. `recordedURL`
+/// n'est lu depuis l'acteur principal qu'après `stop()`, une fois le tap retiré.
+final class BackgroundRecorder: @unchecked Sendable {
+    enum RecordingError: Error {
+        case formatUnavailable
+    }
+
+    private let engine = AVAudioEngine()
+    private var audioFile: AVAudioFile?
+    private var converter: AVAudioConverter?
+    private var targetFormat: AVAudioFormat?
+    private(set) var recordedURL: URL?
+
+    func start() throws {
+        let session = AVAudioSession.sharedInstance()
+        try session.setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker])
+        try session.setActive(true)
+
+        let inputNode = engine.inputNode
+        let inputFormat = inputNode.outputFormat(forBus: 0)
+        guard
+            let targetFormat = AVAudioFormat(
+                commonFormat: .pcmFormatInt16,
+                sampleRate: 16_000,
+                channels: 1,
+                interleaved: true
+            ),
+            let converter = AVAudioConverter(from: inputFormat, to: targetFormat)
+        else {
+            throw RecordingError.formatUnavailable
+        }
+
+        let url = FileManager.default.temporaryDirectory.appendingPathComponent("\(UUID().uuidString).wav")
+        let file = try AVAudioFile(
+            forWriting: url,
+            settings: targetFormat.settings,
+            commonFormat: .pcmFormatInt16,
+            interleaved: true
+        )
+
+        self.targetFormat = targetFormat
+        self.converter = converter
+        self.audioFile = file
+        self.recordedURL = url
+
+        inputNode.installTap(onBus: 0, bufferSize: 4_096, format: inputFormat) { [self] buffer, _ in
+            process(buffer: buffer)
+        }
+        engine.prepare()
+        try engine.start()
+    }
+
+    func stop() {
+        engine.inputNode.removeTap(onBus: 0)
+        engine.stop()
+        audioFile = nil
+        try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+    }
+
+    /// Tourne sur le thread temps réel du moteur audio : uniquement
+    /// conversion PCM + écriture disque ici, jamais de lecture de l'App
+    /// Group (`UserDefaults(suiteName:)`) — ce polling-là vit dans
+    /// `ContentView`, sur l'acteur principal, à un rythme bien plus lent.
+    private func process(buffer: AVAudioPCMBuffer) {
+        guard let converter, let targetFormat, let audioFile else { return }
+
+        let ratio = targetFormat.sampleRate / buffer.format.sampleRate
+        let capacity = AVAudioFrameCount(Double(buffer.frameLength) * ratio) + 16
+        guard let converted = AVAudioPCMBuffer(pcmFormat: targetFormat, frameCapacity: capacity) else { return }
+
+        var consumed = false
+        var conversionError: NSError?
+        converter.convert(to: converted, error: &conversionError) { _, outStatus in
+            if consumed {
+                outStatus.pointee = .noDataNow
+                return nil
+            }
+            consumed = true
+            outStatus.pointee = .haveData
+            return buffer
+        }
+        guard conversionError == nil else { return }
+        try? audioFile.write(from: converted)
+    }
+}
+
 struct ContentView: View {
+    /// Filet de sécurité : au-delà, l'app termine et transcrit d'elle-même,
+    /// même sans signal du clavier — voir Phase 3.5 item 2.
+    private static let maxRecordingDuration: TimeInterval = 180
+
     @State private var uiState: RecordingUIState = .idle
     @State private var showSettings = false
-    @State private var recorder: AVAudioRecorder?
-    @State private var recordingURL: URL?
+    @State private var recorder = BackgroundRecorder()
+    @State private var pollTimer: Timer?
+    @State private var recordingStartedAt: Date?
 
     private let router = LaunchURLRouter.shared
     private let channel = DictationChannel()
@@ -55,8 +153,10 @@ struct ContentView: View {
         case .recording:
             VStack(spacing: 12) {
                 Text("🔴 Enregistrement en cours")
-                Button("Terminé") { stopRecordingAndTranscribe() }
-                    .buttonStyle(.borderedProminent)
+                Text("Contrôle depuis le clavier — reviens dans ton app.")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
             }
 
         case .transcribing:
@@ -96,29 +196,18 @@ struct ContentView: View {
             }
 
             do {
-                let url = FileManager.default.temporaryDirectory.appendingPathComponent("\(UUID().uuidString).wav")
-                let session = AVAudioSession.sharedInstance()
-                try session.setCategory(.record, mode: .default)
-                try session.setActive(true)
+                try recorder.start()
 
-                let settings: [String: Any] = [
-                    AVFormatIDKey: kAudioFormatLinearPCM,
-                    AVSampleRateKey: 16_000,
-                    AVNumberOfChannelsKey: 1,
-                    AVLinearPCMBitDepthKey: 16,
-                    AVLinearPCMIsFloatKey: false,
-                    AVLinearPCMIsBigEndianKey: false,
-                ]
-                let newRecorder = try AVAudioRecorder(url: url, settings: settings)
-                newRecorder.record()
-                recorder = newRecorder
-                recordingURL = url
-
-                guard var request = channel.read(), request.id == requestID else { return }
+                guard var request = channel.read(), request.id == requestID else {
+                    recorder.stop()
+                    return
+                }
                 request.status = .recording
                 request.statusUpdatedAt = Date()
                 channel.write(request)
                 uiState = .recording
+                recordingStartedAt = Date()
+                startPolling(requestID: requestID)
             } catch {
                 markFailed(requestID: requestID, message: "Impossible de démarrer l'enregistrement.")
             }
@@ -133,12 +222,56 @@ struct ContentView: View {
         }
     }
 
-    private func stopRecordingAndTranscribe() {
-        recorder?.stop()
-        recorder = nil
+    /// Seule source de vérité pendant l'enregistrement : le clavier ne pousse
+    /// plus de bouton "Terminé" côté app (ADR-0002, Phase 3.5 item 2) — tout
+    /// passe par `stopRequested` dans l'App Group, plus ce filet de sécurité
+    /// de durée. Rythme volontairement plus lent que le tap audio (qui, lui,
+    /// ne doit jamais toucher à l'App Group — voir `BackgroundRecorder`).
+    private func startPolling(requestID: UUID) {
+        pollTimer?.invalidate()
+        pollTimer = Timer.scheduledTimer(withTimeInterval: 0.25, repeats: true) { _ in
+            pollDuringRecording(requestID: requestID)
+        }
+    }
 
-        guard var request = channel.read(), let url = recordingURL else { return }
-        let requestID = request.id
+    private func pollDuringRecording(requestID: UUID) {
+        guard let request = channel.read(), request.id == requestID else {
+            // Le clavier a vidé le canal (`cancel()`) ou une autre requête
+            // l'a remplacé : on interprète ça comme une annulation.
+            cancelRecording()
+            return
+        }
+
+        if request.stopRequested {
+            stopRecordingAndTranscribe(requestID: requestID)
+            return
+        }
+
+        if let startedAt = recordingStartedAt,
+            Date().timeIntervalSince(startedAt) > Self.maxRecordingDuration
+        {
+            stopRecordingAndTranscribe(requestID: requestID)
+        }
+    }
+
+    private func cancelRecording() {
+        pollTimer?.invalidate()
+        pollTimer = nil
+        recorder.stop()
+        if let url = recorder.recordedURL {
+            try? FileManager.default.removeItem(at: url)
+        }
+        recordingStartedAt = nil
+        uiState = .idle
+    }
+
+    private func stopRecordingAndTranscribe(requestID: UUID) {
+        pollTimer?.invalidate()
+        pollTimer = nil
+        recorder.stop()
+        recordingStartedAt = nil
+
+        guard let url = recorder.recordedURL, var request = channel.read(), request.id == requestID else { return }
 
         request.status = .transcribing
         request.statusUpdatedAt = Date()
