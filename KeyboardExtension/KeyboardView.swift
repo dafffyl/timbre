@@ -31,10 +31,22 @@ struct KeyboardView: View {
     @State private var isNumericPage = false
 
     /// Lettre dont l'appui long affiche les variantes accentuées, `nil` si
-    /// aucun picker n'est ouvert. Remis à `nil` dès qu'une touche lettre est
-    /// tapée normalement (voir `tapLetter`), pour ne pas laisser un picker
-    /// ouvert traîner visuellement après que l'utilisateur a changé d'avis.
+    /// aucun picker n'est ouvert.
     @State private var pendingAccentLetter: String?
+    @State private var accentLongPressTimer: Timer?
+
+    /// Variante actuellement survolée par le doigt pendant le glissé —
+    /// permet de surligner l'option sous le doigt, comme au clavier système.
+    @State private var hoveredVariant: String?
+
+    /// Cadre de chaque bouton de variante, dans l'espace de coordonnées
+    /// nommé "keyboard" (posé sur le `ZStack` racine) — nécessaire pour
+    /// traduire la position du doigt (rapportée par un seul geste continu
+    /// depuis la lettre jusqu'au picker) en "quelle variante est en dessous".
+    /// Des `Button` indépendants pour chaque variante ne suffisent pas : un
+    /// glissé continu depuis la touche lettre ne déclenche jamais le tap
+    /// d'un autre `Button` qu'on relâche au-dessus sans y avoir appuyé.
+    @State private var accentVariantFrames: [String: CGRect] = [:]
 
     @State private var deleteRepeatTimer: Timer?
 
@@ -88,6 +100,11 @@ struct KeyboardView: View {
                     .padding(.top, 44)
             }
         }
+        // Nommé pour que `letterGesture` puisse convertir la position du
+        // doigt en coordonnées comparables aux cadres capturés par
+        // `accentPicker`, quel que soit l'ancêtre commun réel dans l'arbre
+        // de vues.
+        .coordinateSpace(name: "keyboard")
         .preferredColorScheme(.dark)
         .onChange(of: viewModel.state) { _, newState in
             if newState != .recording {
@@ -211,31 +228,86 @@ struct KeyboardView: View {
         .clipShape(Capsule())
     }
 
+    /// Pas de `Button` ici, volontairement : un tap simple et un appui long
+    /// suivi d'un glissé jusqu'au picker de variantes sont un seul et même
+    /// geste continu (le doigt ne quitte jamais l'écran entre les deux). Un
+    /// `Button` par variante ne peut pas recevoir un relâché qui a commencé
+    /// ailleurs — d'où un unique `DragGesture` qui suit le doigt du début à
+    /// la fin et décide, à la fin seulement, ce qu'il faut insérer.
     private func letterKey(_ key: String) -> some View {
-        Button {
-            tapLetter(key)
-        } label: {
-            Text(isUppercase ? key.uppercased() : key.lowercased())
-                .font(.title3)
-                .foregroundStyle(.white)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 12)
-                .background(keyBackground)
-                .clipShape(RoundedRectangle(cornerRadius: 6))
-        }
-        .buttonStyle(.plain)
-        // `.simultaneousGesture` plutôt que `.onLongPressGesture` : coexiste
-        // avec le tap du `Button` sans l'annuler — un appui long doit quand
-        // même pouvoir se terminer en tap simple normal (relâché avant le
-        // seuil), ce que `.onLongPressGesture` seul gère moins fiablement
-        // une fois combiné à un `Button`.
-        .simultaneousGesture(
-            LongPressGesture(minimumDuration: 0.35).onEnded { _ in
-                guard !DiacriticVariants.variants(for: key).isEmpty else { return }
-                onHapticTap()
-                pendingAccentLetter = key
+        Text(isUppercase ? key.uppercased() : key.lowercased())
+            .font(.title3)
+            .foregroundStyle(.white)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 12)
+            .background(pendingAccentLetter == key ? Color.white.opacity(0.25) : keyBackground)
+            .clipShape(RoundedRectangle(cornerRadius: 6))
+            .contentShape(Rectangle())
+            .gesture(letterGesture(for: key))
+    }
+
+    private func letterGesture(for key: String) -> some Gesture {
+        DragGesture(minimumDistance: 0, coordinateSpace: .named("keyboard"))
+            .onChanged { value in
+                if pendingAccentLetter == nil && accentLongPressTimer == nil {
+                    startAccentTimer(for: key)
+                }
+                if pendingAccentLetter != nil {
+                    hoveredVariant = variant(at: value.location, for: key)
+                }
             }
-        )
+            .onEnded { value in
+                accentLongPressTimer?.invalidate()
+                accentLongPressTimer = nil
+
+                if pendingAccentLetter != nil {
+                    let selected = variant(at: value.location, for: key)
+                    pendingAccentLetter = nil
+                    hoveredVariant = nil
+                    insertLetterOrVariant(base: key, selected: selected)
+                } else {
+                    tapLetter(key)
+                }
+            }
+    }
+
+    /// Démarre le délai avant affichage du picker — un vrai `Timer`, pas un
+    /// simple minimum sur `LongPressGesture`, pour continuer à courir même
+    /// si le doigt reste parfaitement immobile (`onChanged` ne se
+    /// redéclenche pas sans mouvement, `Timer` si). Rien ne se passe pour
+    /// une lettre sans variante : le relâchement retombe alors sur
+    /// `tapLetter` normalement.
+    private func startAccentTimer(for key: String) {
+        guard !DiacriticVariants.variants(for: key).isEmpty else { return }
+        accentLongPressTimer = Timer.scheduledTimer(withTimeInterval: 0.35, repeats: false) { _ in
+            onHapticTap()
+            pendingAccentLetter = key
+        }
+    }
+
+    /// Ne cherche que parmi les variantes de `letter` (la lettre dont le
+    /// picker est ouvert), jamais tout `accentVariantFrames` — sans ce
+    /// filtre, un cadre laissé par un picker précédent sur une autre lettre
+    /// pourrait matcher par coïncidence de position à l'écran.
+    private func variant(at point: CGPoint, for letter: String) -> String? {
+        let candidates = [letter] + DiacriticVariants.variants(for: letter)
+        return candidates.first { candidate in
+            accentVariantFrames[candidate]?.contains(point) ?? false
+        }
+    }
+
+    /// `selected == nil` : le doigt a été relâché hors de toute variante
+    /// reconnue (dont la lettre de base elle-même) — on insère quand même la
+    /// lettre de base plutôt que de ne rien faire, un peu plus permissif que
+    /// le clavier système (qui annule si on glisse franchement hors du
+    /// picker), pour éviter la frustration d'un tap qui ne produit rien.
+    private func insertLetterOrVariant(base: String, selected: String?) {
+        onHapticTap()
+        let text = selected ?? base
+        onKeyTap(isUppercase ? text.uppercased() : text.lowercased())
+        if shiftState == .shifted {
+            shiftState = .off
+        }
     }
 
     /// Touche de la page "123" — chiffre ou ponctuation, jamais de casse ni
@@ -262,25 +334,33 @@ struct KeyboardView: View {
     /// pour être fonctionnel, le positionnement précis relève de la passe
     /// UI prévue plus tard. La lettre de base est incluse en premier, comme
     /// au clavier système (relâcher sans glisser insère la lettre simple).
+    ///
+    /// Pas de `Button` : la sélection se décide entièrement dans
+    /// `letterGesture`, à partir des cadres capturés ici via
+    /// `GeometryReader`. Cette vue ne fait qu'afficher, surligner celle
+    /// survolée (`hoveredVariant`), et publier sa géométrie.
     private func accentPicker(for letter: String) -> some View {
         let variants = [letter] + DiacriticVariants.variants(for: letter)
         return HStack(spacing: 6) {
             ForEach(variants, id: \.self) { variant in
-                Button {
-                    onHapticTap()
-                    onKeyTap(isUppercase ? variant.uppercased() : variant.lowercased())
-                    if shiftState == .shifted {
-                        shiftState = .off
-                    }
-                    pendingAccentLetter = nil
-                } label: {
-                    Text(isUppercase ? variant.uppercased() : variant.lowercased())
-                        .font(.title3)
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 8)
-                }
-                .buttonStyle(.plain)
+                Text(isUppercase ? variant.uppercased() : variant.lowercased())
+                    .font(.title3)
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 8)
+                    .background(hoveredVariant == variant ? Color.white.opacity(0.35) : Color.clear)
+                    .clipShape(RoundedRectangle(cornerRadius: 6))
+                    .background(
+                        GeometryReader { geometry in
+                            Color.clear
+                                .onAppear {
+                                    accentVariantFrames[variant] = geometry.frame(in: .named("keyboard"))
+                                }
+                                .onChange(of: geometry.frame(in: .named("keyboard"))) { _, newFrame in
+                                    accentVariantFrames[variant] = newFrame
+                                }
+                        }
+                    )
             }
         }
         .background(Color(white: 0.35))
