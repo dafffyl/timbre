@@ -49,7 +49,7 @@ struct SettingsView: View {
         // pas un chemin critique — une clé absente ou une erreur Keychain
         // laissent simplement le champ vide, sans casser l'écran.
         if let key = try? store.load() {
-            apiKey = key ?? ""
+            apiKey = key
         }
     }
 
