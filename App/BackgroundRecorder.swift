@@ -53,12 +53,18 @@ final class BackgroundRecorder: @unchecked Sendable {
 
         let inputNode = engine.inputNode
         let inputFormat = inputNode.outputFormat(forBus: 0)
+        // Float32 non-interleaved : c'est le format canonique qu'`AVAudioFile`
+        // attend en entrée de `write(from:)` quand le fichier de destination
+        // est compressé (AAC) — le convertisseur interne (`ExtAudioFile`) qui
+        // encode à l'écriture n'accepte pas n'importe quel agencement PCM en
+        // amont. Le passage à Int16 se fait uniquement dans l'encodeur AAC,
+        // pas ici.
         guard
             let targetFormat = AVAudioFormat(
-                commonFormat: .pcmFormatInt16,
+                commonFormat: .pcmFormatFloat32,
                 sampleRate: 16_000,
                 channels: 1,
-                interleaved: true
+                interleaved: false
             ),
             let converter = AVAudioConverter(from: inputFormat, to: targetFormat)
         else {
@@ -102,14 +108,26 @@ final class BackgroundRecorder: @unchecked Sendable {
         try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
     }
 
+    /// Écrit directement en AAC (conteneur `.m4a`) plutôt qu'en PCM brut :
+    /// même contenu utile pour Whisper, ~8-10x plus léger à 32 kbps mono
+    /// 16 kHz — donc un upload plus rapide vers Groq, en particulier sur
+    /// réseau mobile faible. `AVAudioFile` encode lui-même à l'écriture
+    /// (`ExtAudioFile` sous le capot) à partir du buffer Float32
+    /// non-entrelacé produit par `process(buffer:)`.
     private func openNewFile() throws {
         guard let targetFormat else { throw RecordingError.formatUnavailable }
-        let url = FileManager.default.temporaryDirectory.appendingPathComponent("\(UUID().uuidString).wav")
+        let url = FileManager.default.temporaryDirectory.appendingPathComponent("\(UUID().uuidString).m4a")
+        let settings: [String: Any] = [
+            AVFormatIDKey: kAudioFormatMPEG4AAC,
+            AVSampleRateKey: targetFormat.sampleRate,
+            AVNumberOfChannelsKey: targetFormat.channelCount,
+            AVEncoderBitRateKey: 32_000,
+        ]
         let file = try AVAudioFile(
             forWriting: url,
-            settings: targetFormat.settings,
-            commonFormat: .pcmFormatInt16,
-            interleaved: true
+            settings: settings,
+            commonFormat: .pcmFormatFloat32,
+            interleaved: false
         )
         audioFileBox.withLock { $0 = file }
         recordedURL = url
