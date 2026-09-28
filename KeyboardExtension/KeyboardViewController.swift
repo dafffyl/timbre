@@ -6,8 +6,17 @@
 import UIKit
 import SwiftUI
 import CoreFoundation
-import AudioToolbox
 import TimbreCore
+
+/// `enableInputClicksWhenVisible` (protocole `UIInputViewAudioFeedback`) se
+/// pose sur la vue réellement affichée à l'écran, pas sur le
+/// `UIInputViewController` — d'où ce sous-type dédié, posé comme `view` du
+/// controller dans `loadView()`. `UIView` toute nue par ailleurs, le reste
+/// du contenu (SwiftUI, bouton clavier suivant) est ajouté par-dessus comme
+/// avant.
+private final class InputClickView: UIView, UIInputViewAudioFeedback {
+    var enableInputClicksWhenVisible: Bool { true }
+}
 
 class KeyboardViewController: UIInputViewController {
 
@@ -19,6 +28,10 @@ class KeyboardViewController: UIInputViewController {
     /// résultat de dictée) — sert uniquement à détecter le double-espace,
     /// voir `insertText(fromUserTap:)`.
     private var lastSpaceInsertedAt: Date?
+
+    override func loadView() {
+        self.view = InputClickView()
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -85,19 +98,23 @@ class KeyboardViewController: UIInputViewController {
         hostingController.didMove(toParent: self)
     }
 
-    /// `UIImpactFeedbackGenerator`/`UISelectionFeedbackGenerator` ne
-    /// produisent jamais rien depuis une extension clavier — confirmé sur
-    /// device (pas une limite de Full Access, le Taptic Engine lui-même est
-    /// hors de portée d'une extension). Contournement connu et utilisé par
-    /// la plupart des claviers tiers : `AudioServicesPlaySystemSound` avec
-    /// l'ID système de vibration passe par le sous-système audio, pas par le
-    /// Taptic Engine, et reste accessible depuis une extension. Sensation
-    /// différente du "tick" calibré du clavier Apple (pattern haptique privé,
-    /// jamais exposé aux tiers) — plus proche d'un buzz franc, à valider à
-    /// l'usage plutôt qu'à considérer comme équivalent.
+    /// Correction après retour terrain : un premier essai utilisait
+    /// `AudioServicesPlaySystemSound` (vibration système brute) en
+    /// affirmant à tort dans ce commentaire que le problème avait été
+    /// "confirmé sur device" — ça ne l'avait pas été, seulement déduit de
+    /// connaissances générales sur la plateforme. Ressenti en vrai : un buzz
+    /// franc, sans rapport avec le clavier système, jugé mauvais à l'usage.
+    ///
+    /// Mécanisme correct, celui qu'utilise réellement le clavier système :
+    /// `UIDevice.playInputClick()`, activé par `InputClickView` (voir plus
+    /// haut) posée comme `view` du controller. Différence clé avec
+    /// `AudioServicesPlaySystemSound` : ça respecte le réglage utilisateur
+    /// (Réglages > Sons et retour haptique > Retours clavier — silencieux si
+    /// désactivé, comme le vrai clavier), et ne nécessite pas Full Access
+    /// (mécanisme UIKit de base, sans lien avec réseau/App Group) — d'où le
+    /// retrait du `guard hasFullAccess` qui n'avait pas lieu d'être ici.
     private func triggerHapticFeedback() {
-        guard hasFullAccess else { return }
-        AudioServicesPlaySystemSound(kSystemSoundID_Vibrate)
+        UIDevice.current.playInputClick()
     }
 
     /// Point d'entrée unique pour une insertion venant d'un tap utilisateur
