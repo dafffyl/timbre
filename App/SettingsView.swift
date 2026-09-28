@@ -4,6 +4,7 @@ import TimbreSecurity
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var apiKey: String = ""
+    @State private var cleanupEnabled = false
     @State private var savedConfirmation = false
 
     private let store = APIKeyStore()
@@ -19,6 +20,12 @@ struct SettingsView: View {
                     Text("Groq")
                 } footer: {
                     Text("Stockée dans le Trousseau, jamais dans les réglages de l'app ni dans les journaux.")
+                }
+
+                Section {
+                    Toggle("Nettoyer automatiquement le texte", isOn: $cleanupEnabled)
+                } footer: {
+                    Text("Retire les hésitations et corrige la ponctuation via un second appel IA, après la transcription. Expérimental : désactivé par défaut.")
                 }
 
                 if savedConfirmation {
@@ -51,10 +58,16 @@ struct SettingsView: View {
         if let key = try? store.load() {
             apiKey = key ?? ""
         }
+        cleanupEnabled = DictationPreferences.cleanupEnabled
     }
 
     private func save() {
-        guard !apiKey.isEmpty else { return }
+        DictationPreferences.cleanupEnabled = cleanupEnabled
+
+        guard !apiKey.isEmpty else {
+            savedConfirmation = true
+            return
+        }
         do {
             try store.save(apiKey)
             savedConfirmation = true

@@ -99,8 +99,9 @@ struct GroqProviderTests {
 extension URLRequest {
     /// `URLProtocol` reçoit parfois le corps via un flux plutôt que
     /// `httpBody` selon le chemin interne emprunté par `URLSession` — on lit
-    /// les deux pour ne pas dépendre de ce détail d'implémentation.
-    fileprivate func httpBodyStreamData() -> Data? {
+    /// les deux pour ne pas dépendre de ce détail d'implémentation. Pas
+    /// `fileprivate` : réutilisée telle quelle par `GroqTextCleanupProviderTests`.
+    func httpBodyStreamData() -> Data? {
         guard let stream = httpBodyStream else { return nil }
         stream.open()
         defer { stream.close() }
