@@ -22,7 +22,7 @@ jobs:
 
       - name: Tests unitaires des packages
         run: |
-          for package in Packages/TimbreCore Packages/TimbreTranscription; do
+          for package in Packages/TimbreCore Packages/TimbreTranscription Packages/TimbreDiarization; do
             echo "→ swift test dans $package"
             (cd "$package" && swift test)
           done
