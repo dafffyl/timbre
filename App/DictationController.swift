@@ -205,16 +205,44 @@ final class DictationController {
                         prompt: vocabulary.isEmpty ? nil : vocabulary
                     )
                 )
+                let finalText = await Self.cleanedUpText(
+                    for: result.text,
+                    apiKeyStore: apiKeyStore
+                )
 
                 guard var ready = channel.read(), ready.id == requestID else { return }
                 ready.status = .ready
                 ready.statusUpdatedAt = Date()
-                ready.resultText = result.text
+                ready.resultText = finalText
                 channel.write(ready)
                 state = .done
             } catch {
                 markFailed(requestID: requestID, message: Self.userMessage(for: error))
             }
+        }
+    }
+
+    /// Étape opportuniste, distincte de la transcription elle-même : la
+    /// dictée est déjà un succès utilisable une fois `rawText` obtenu
+    /// (résultat de Whisper). Que le nettoyage échoue (réseau, quota,
+    /// réponse mal formée, annulation) ne doit jamais faire régresser cette
+    /// dictée en échec — d'où la capture générique volontaire ici, qui
+    /// dégrade vers le texte littéral plutôt que de propager. Ce n'est pas
+    /// le même cas que le `try?` silencieux que la convention du projet
+    /// interdit ailleurs : là, une erreur silencieuse masquerait un vrai
+    /// échec ; ici, elle protège un résultat déjà valide d'un raffinement
+    /// en option. Désactivée par défaut (voir
+    /// `DictationPreferences.cleanupEnabled`) tant qu'elle n'est pas éprouvée
+    /// à l'usage.
+    private static func cleanedUpText(for rawText: String, apiKeyStore: APIKeyStore) async -> String {
+        guard DictationPreferences.cleanupEnabled else { return rawText }
+
+        let cleanupProvider = GroqTextCleanupProvider(apiKey: { (try? apiKeyStore.load()) ?? nil })
+        do {
+            let cleaned = try await cleanupProvider.cleanUp(TextCleanupRequest(text: rawText, language: "fr"))
+            return cleaned.text
+        } catch {
+            return rawText
         }
     }
 

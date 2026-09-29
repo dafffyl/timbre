@@ -5,6 +5,7 @@ struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var apiKey: String = ""
     @State private var vocabulary: String = ""
+    @State private var cleanupEnabled = false
     @State private var savedConfirmation = false
 
     private let store = APIKeyStore()
@@ -29,6 +30,12 @@ struct SettingsView: View {
                     Text("Vocabulaire personnalisé")
                 } footer: {
                     Text("Noms propres ou jargon technique fréquents — améliore leur reconnaissance par Whisper.")
+                }
+
+                Section {
+                    Toggle("Nettoyer automatiquement le texte", isOn: $cleanupEnabled)
+                } footer: {
+                    Text("Retire les hésitations et corrige la ponctuation via un second appel IA, après la transcription. Expérimental : désactivé par défaut.")
                 }
 
                 if savedConfirmation {
@@ -62,10 +69,12 @@ struct SettingsView: View {
             apiKey = key ?? ""
         }
         vocabulary = DictationPreferences.vocabularyPrompt
+        cleanupEnabled = DictationPreferences.cleanupEnabled
     }
 
     private func save() {
         DictationPreferences.vocabularyPrompt = vocabulary
+        DictationPreferences.cleanupEnabled = cleanupEnabled
 
         // Le vocabulaire (potentiellement vidé volontairement) se sauvegarde
         // toujours ; la clé API, elle, ne s'écrase jamais avec une valeur
