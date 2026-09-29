@@ -81,6 +81,7 @@ public struct GroqProvider: TranscriptionProvider {
         urlRequest.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
         urlRequest.httpBody = buildMultipartBody(
             audio: request.audio,
+            format: request.format,
             model: model,
             language: request.language,
             prompt: request.prompt,
@@ -122,6 +123,7 @@ public struct GroqProvider: TranscriptionProvider {
 
     private static func buildMultipartBody(
         audio: Data,
+        format: AudioFormat,
         model: String,
         language: String?,
         prompt: String?,
@@ -146,8 +148,8 @@ public struct GroqProvider: TranscriptionProvider {
         }
 
         body.append("--\(boundary)\r\n".data(using: .utf8)!)
-        body.append("Content-Disposition: form-data; name=\"file\"; filename=\"audio.wav\"\r\n".data(using: .utf8)!)
-        body.append("Content-Type: audio/wav\r\n\r\n".data(using: .utf8)!)
+        body.append("Content-Disposition: form-data; name=\"file\"; filename=\"audio.\(format.fileExtension)\"\r\n".data(using: .utf8)!)
+        body.append("Content-Type: \(format.mimeType)\r\n\r\n".data(using: .utf8)!)
         body.append(audio)
         body.append("\r\n".data(using: .utf8)!)
         body.append("--\(boundary)--\r\n".data(using: .utf8)!)

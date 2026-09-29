@@ -4,6 +4,7 @@ import TimbreSecurity
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var apiKey: String = ""
+    @State private var vocabulary: String = ""
     @State private var savedConfirmation = false
 
     private let store = APIKeyStore()
@@ -19,6 +20,15 @@ struct SettingsView: View {
                     Text("Groq")
                 } footer: {
                     Text("Stockée dans le Trousseau, jamais dans les réglages de l'app ni dans les journaux.")
+                }
+
+                Section {
+                    TextField("Ex. Kubernetes, Aymeric, Groq…", text: $vocabulary, axis: .vertical)
+                        .lineLimit(3...6)
+                } header: {
+                    Text("Vocabulaire personnalisé")
+                } footer: {
+                    Text("Noms propres ou jargon technique fréquents — améliore leur reconnaissance par Whisper.")
                 }
 
                 if savedConfirmation {
@@ -51,10 +61,19 @@ struct SettingsView: View {
         if let key = try? store.load() {
             apiKey = key ?? ""
         }
+        vocabulary = DictationPreferences.vocabularyPrompt
     }
 
     private func save() {
-        guard !apiKey.isEmpty else { return }
+        DictationPreferences.vocabularyPrompt = vocabulary
+
+        // Le vocabulaire (potentiellement vidé volontairement) se sauvegarde
+        // toujours ; la clé API, elle, ne s'écrase jamais avec une valeur
+        // vide pour éviter d'effacer une clé déjà enregistrée par erreur.
+        guard !apiKey.isEmpty else {
+            savedConfirmation = true
+            return
+        }
         do {
             try store.save(apiKey)
             savedConfirmation = true

@@ -196,7 +196,15 @@ final class DictationController {
 
                 let apiKeyStore = APIKeyStore()
                 let provider = GroqProvider(apiKey: { (try? apiKeyStore.load()) ?? nil })
-                let result = try await provider.transcribe(TranscriptionRequest(audio: audioData, language: "fr"))
+                let vocabulary = DictationPreferences.vocabularyPrompt
+                let result = try await provider.transcribe(
+                    TranscriptionRequest(
+                        audio: audioData,
+                        format: .m4a,
+                        language: "fr",
+                        prompt: vocabulary.isEmpty ? nil : vocabulary
+                    )
+                )
 
                 guard var ready = channel.read(), ready.id == requestID else { return }
                 ready.status = .ready
