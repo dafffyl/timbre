@@ -290,12 +290,42 @@ final class DictationController {
             return "Problème réseau — vérifie ta connexion."
         case .rateLimited:
             return "Trop de requêtes envoyées à Groq — réessaie dans un instant."
-        case .server(let statusCode, _):
+        case .server(let statusCode, let rawMessage):
+            let detail = Self.humanReadableDetail(from: rawMessage)
+            if statusCode == 401 || statusCode == 403 {
+                let suffix = detail.map { " : \($0)" } ?? ""
+                return "Clé API Groq refusée (code \(statusCode))\(suffix) — vérifie-la sur console.groq.com."
+            }
+            if let detail, !detail.isEmpty {
+                return "Erreur Groq (code \(statusCode)) : \(detail)"
+            }
             return "Erreur Groq (code \(statusCode))."
         case .decoding, .invalidResponse:
             return "Réponse inattendue de Groq."
         case .cancelled:
             return "Annulé."
         }
+    }
+
+    /// Le corps d'erreur de Groq est du JSON (`{"error": {"message": "..."}}`) —
+    /// on en extrait le message lisible plutôt que d'afficher le JSON brut à
+    /// l'utilisateur. Si le format diffère de ce qu'on attend (l'API change,
+    /// ou une erreur réseau intermédiaire renvoie du HTML/texte), on retombe
+    /// sur le texte brut tel quel plutôt que de perdre l'information.
+    private static func humanReadableDetail(from rawMessage: String?) -> String? {
+        guard let rawMessage else { return nil }
+        guard let data = rawMessage.data(using: .utf8),
+            let decoded = try? JSONDecoder().decode(GroqErrorBody.self, from: data)
+        else {
+            return rawMessage
+        }
+        return decoded.error.message
+    }
+
+    private struct GroqErrorBody: Decodable {
+        struct Detail: Decodable {
+            let message: String
+        }
+        let error: Detail
     }
 }
