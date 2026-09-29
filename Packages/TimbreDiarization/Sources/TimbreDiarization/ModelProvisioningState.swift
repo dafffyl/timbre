@@ -11,8 +11,6 @@ public enum ModelProvisioningState: Sendable, Equatable {
     /// Consentement donné mais pas sur Wi-Fi actuellement — jamais de
     /// dérogation automatique sur cellulaire (décision produit, ADR-0004).
     case needsWiFi
-    /// Téléchargement/compilation en cours.
-    case downloading
     /// Échec (réseau coupé en cours de route, erreur du moteur) — pas un
     /// état permanent, la prochaine tentative repart de `.needsWiFi`/
     /// `.needsConsent` selon l'état réel (ADR-0004, cas limite 3).

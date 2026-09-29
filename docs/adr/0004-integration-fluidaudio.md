@@ -65,10 +65,19 @@ FluidAudioDiarizationProvider — implémentation concrète (actor), wrap Offlin
 NetworkConnectionType        — .wifi / .cellular / .other / .unavailable
 NetworkStatusProvider        — protocole pour interroger le type de connexion courant
 
-ModelProvisioningState       — .ready / .needsConsent / .needsWiFi / .downloading / .failed
+ModelProvisioningState       — .ready / .needsConsent / .needsWiFi / .failed
 ModelProvisioningStateStore  — protocole pour lire/écrire consentement + succès passé
 ModelProvisioningCoordinator — orchestre la logique ci-dessous (actor)
 ```
+
+**Correction en écrivant l'UI** : un état `.downloading` était prévu ici à
+l'origine, retiré avant l'implémentation. `ensureModelsReady()` est un seul
+appel bloquant qui ne rend la main qu'au résultat final (`.ready`/`.failed`)
+— il n'y a pas d'état intermédiaire que le coordinateur pourrait réellement
+produire, et `OfflineDiarizerManager.prepareModels()` (vérifié dans le
+source de FluidAudio) n'accepte pas de callback de progression. L'attente
+(~16s au premier téléchargement) est signalée par un simple indicateur "en
+cours" côté vue, pas par un état du domaine.
 
 ## Logique de `ModelProvisioningCoordinator`
 

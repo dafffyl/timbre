@@ -7,6 +7,7 @@ import SwiftUI
 
 struct ContentView: View {
     @State private var showSettings = false
+    @State private var showDiarizationSetup = false
 
     private let controller = DictationController.shared
     private let router = LaunchURLRouter.shared
@@ -18,12 +19,21 @@ struct ContentView: View {
 
             statusView
 
+            // Pas encore la fonctionnalité réunion elle-même (enregistrement,
+            // transcript par locuteur) — seulement l'écran de provisionnement
+            // des modèles, voir DiarizationSetupView.
+            Button("Transcription de réunion") { showDiarizationSetup = true }
+                .font(.footnote)
+
             Button("Réglages") { showSettings = true }
                 .font(.footnote)
         }
         .padding()
         .sheet(isPresented: $showSettings) {
             SettingsView()
+        }
+        .sheet(isPresented: $showDiarizationSetup) {
+            DiarizationSetupView()
         }
         .onAppear { consumePendingURLIfNeeded() }
         .onChange(of: router.pendingURL) { _, _ in consumePendingURLIfNeeded() }
