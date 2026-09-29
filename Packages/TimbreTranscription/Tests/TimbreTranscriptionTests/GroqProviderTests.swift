@@ -94,6 +94,27 @@ struct GroqProviderTests {
         #expect(bodyText.contains("name=\"language\""))
         #expect(bodyText.contains("vocabulaire technique"))
     }
+
+    @Test func requestDeclaresTheActualAudioFormatSent() async throws {
+        let json = Data("""
+        {"text": ""}
+        """.utf8)
+
+        let capturedBody = Box<Data?>(nil)
+        MockURLProtocol.requestHandler = { request in
+            capturedBody.value = request.httpBodyStreamData() ?? request.httpBody
+            let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
+            return (response, json)
+        }
+
+        let provider = GroqProvider(apiKey: { "test-key" }, urlSession: MockURLProtocol.makeSession())
+        _ = try await provider.transcribe(TranscriptionRequest(audio: Data([0x00]), format: .m4a))
+
+        let bodyText = String(data: capturedBody.value ?? Data(), encoding: .utf8) ?? ""
+        #expect(bodyText.contains("filename=\"audio.m4a\""))
+        #expect(bodyText.contains("Content-Type: audio/m4a"))
+        #expect(!bodyText.contains("audio.wav"))
+    }
 }
 
 extension URLRequest {

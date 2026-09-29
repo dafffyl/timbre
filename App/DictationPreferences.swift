@@ -12,7 +12,16 @@ import Foundation
 /// `DictationController` : une seule définition de chaque clé, pour éviter
 /// qu'elle diverge entre l'écriture et la lecture.
 enum DictationPreferences {
+    private static let vocabularyKey = "fr.dafffyl.timbre.vocabularyPrompt"
     private static let cleanupEnabledKey = "fr.dafffyl.timbre.cleanupEnabled"
+
+    /// Vocabulaire personnalisé de l'utilisateur (noms propres, jargon
+    /// technique) — transmis comme `prompt` à Whisper pour améliorer la
+    /// reconnaissance de mots rares (voir `TranscriptionRequest.prompt`).
+    static var vocabularyPrompt: String {
+        get { UserDefaults.standard.string(forKey: vocabularyKey) ?? "" }
+        set { UserDefaults.standard.set(newValue, forKey: vocabularyKey) }
+    }
 
     /// Désactivé par défaut (`bool(forKey:)` renvoie `false` en l'absence de
     /// valeur) : la passe de nettoyage LLM est une amélioration non éprouvée

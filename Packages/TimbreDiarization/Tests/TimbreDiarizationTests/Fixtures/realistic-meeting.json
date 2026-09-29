@@ -1,0 +1,41 @@
+{
+  "segments": [
+    { "speaker": "0", "start": 0.0, "end": 4.0 },
+    { "speaker": "1", "start": 4.0, "end": 9.5 },
+    { "speaker": "0", "start": 12.0, "end": 16.0 }
+  ],
+  "words": [
+    { "text": "Bonjour", "start": 0.0, "end": 0.5 },
+    { "text": "à", "start": 0.5, "end": 0.6 },
+    { "text": "tous", "start": 0.6, "end": 1.0 },
+    { "text": "commençons", "start": 1.2, "end": 1.9 },
+    { "text": "la", "start": 1.9, "end": 2.0 },
+    { "text": "réunion", "start": 2.0, "end": 2.6 },
+    { "text": "merci", "start": 3.90, "end": 4.15 },
+    { "text": "je", "start": 4.2, "end": 4.3 },
+    { "text": "prends", "start": 4.3, "end": 4.6 },
+    { "text": "la", "start": 4.6, "end": 4.7 },
+    { "text": "parole", "start": 4.7, "end": 5.1 },
+    { "text": "silence", "start": 10.6, "end": 10.75 },
+    { "text": "lointain", "start": 10.75, "end": 10.9 },
+    { "text": "reprenons", "start": 12.1, "end": 12.7 },
+    { "text": "donc", "start": 12.7, "end": 13.0 }
+  ],
+  "expected": [
+    { "text": "Bonjour", "speaker": "0" },
+    { "text": "à", "speaker": "0" },
+    { "text": "tous", "speaker": "0" },
+    { "text": "commençons", "speaker": "0" },
+    { "text": "la", "speaker": "0" },
+    { "text": "réunion", "speaker": "0" },
+    { "text": "merci", "speaker": "1" },
+    { "text": "je", "speaker": "1" },
+    { "text": "prends", "speaker": "1" },
+    { "text": "la", "speaker": "1" },
+    { "text": "parole", "speaker": "1" },
+    { "text": "silence", "speaker": null },
+    { "text": "lointain", "speaker": null },
+    { "text": "reprenons", "speaker": "0" },
+    { "text": "donc", "speaker": "0" }
+  ]
+}
