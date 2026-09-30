@@ -10,10 +10,15 @@ import TimbreDiarization
 /// prévue plus tard. Lance le pipeline complet (diarisation + chunking +
 /// transcription + alignement, voir `MeetingTranscriptionController`) dès
 /// l'apparition, sur le fichier reçu de `MeetingRecordingView`.
+///
+/// Une fois terminé (`.done`), affiche directement `MeetingHistoryDetailView`
+/// plutôt qu'un rendu séparé — un seul endroit qui sait afficher/renommer un
+/// transcript, que ce soit frais ou tiré de l'historique.
 struct MeetingTranscriptView: View {
     let audioURL: URL
 
     @State private var controller = MeetingTranscriptionController()
+    @State private var savedRecord: MeetingRecord?
 
     var body: some View {
         Group {
@@ -37,19 +42,14 @@ struct MeetingTranscriptView: View {
                 }
                 .padding()
 
-            case .done(let turns):
-                TranscriptTurnsView(turns: turns)
+            case .done:
+                if let savedRecord {
+                    MeetingHistoryDetailView(record: savedRecord)
+                }
             }
         }
         .navigationTitle("Transcript")
         .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            if case .done(let turns) = controller.state, !turns.isEmpty {
-                ToolbarItem(placement: .primaryAction) {
-                    ShareLink(item: TranscriptFormatting.plainText(for: turns))
-                }
-            }
-        }
         .task {
             await controller.run(audioURL: audioURL)
             // Le fichier audio n'est plus utile une fois le pipeline terminé
@@ -57,8 +57,12 @@ struct MeetingTranscriptView: View {
             // (voir MeetingRecord), jamais l'audio (ADR-0005).
             try? FileManager.default.removeItem(at: audioURL)
 
-            if case .done(let turns) = controller.state, !turns.isEmpty {
-                DiarizationEnvironment.historyStore.save(MeetingRecord(turns: turns))
+            if case .done(let turns) = controller.state {
+                let record = MeetingRecord(turns: turns)
+                if !turns.isEmpty {
+                    DiarizationEnvironment.historyStore.save(record)
+                }
+                savedRecord = record
             }
         }
     }

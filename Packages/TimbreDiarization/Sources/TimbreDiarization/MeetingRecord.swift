@@ -8,9 +8,23 @@ public struct MeetingRecord: Sendable, Equatable, Codable, Identifiable {
     public let recordedAt: Date
     public let turns: [SpeakerTurn]
 
-    public init(id: UUID = UUID(), recordedAt: Date = Date(), turns: [SpeakerTurn]) {
+    /// Noms personnalisés donnés par l'utilisateur ("Locuteur 1" → "Sophie"),
+    /// indexés par `SpeakerID.rawValue`. Propre à cette réunion : les
+    /// identifiants de FluidAudio ne sont cohérents qu'au sein d'un seul
+    /// appel `process()` (ADR-0005) — le "S1" d'une réunion n'a aucun lien
+    /// garanti avec le "S1" d'une autre, donc pas de mapping global entre
+    /// réunions, seulement par réunion.
+    public var speakerNames: [String: String]
+
+    public init(
+        id: UUID = UUID(),
+        recordedAt: Date = Date(),
+        turns: [SpeakerTurn],
+        speakerNames: [String: String] = [:]
+    ) {
         self.id = id
         self.recordedAt = recordedAt
         self.turns = turns
+        self.speakerNames = speakerNames
     }
 }
