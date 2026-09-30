@@ -25,7 +25,11 @@ final class MeetingTranscriptionController {
         case diarizing
         case transcribing(chunk: Int, of: Int)
         case aligning
-        case done([SpeakerTurn])
+        /// `hadMissingChunks` : au moins un chunk a échoué et a été
+        /// remplacé par un marqueur (voir ADR-0005, cas limite 1 révisé) —
+        /// permet d'afficher un avertissement ponctuel, le marqueur lui-même
+        /// reste visible dans `turns` de toute façon.
+        case done(turns: [SpeakerTurn], hadMissingChunks: Bool)
         case failed(String)
     }
 
@@ -52,27 +56,30 @@ final class MeetingTranscriptionController {
         self.sizeLimitBytes = sizeLimitBytes
     }
 
-    /// Échoue entièrement plutôt que produire un transcript à trous si un
-    /// chunk ou la diarisation échoue (ADR-0005, cas limites 1 et 2) — un
-    /// raffinement "reprendre ce qui a échoué" est possible plus tard si le
-    /// besoin se confirme à l'usage.
+    /// La diarisation qui échoue fait toujours échouer toute la réunion
+    /// (ADR-0005, cas limite 2 : nature de problème différente, pas un aléa
+    /// réseau ponctuel). Un chunk de transcription qui échoue, lui, dégrade
+    /// vers un marqueur plutôt que d'interrompre tout le pipeline (cas
+    /// limite 1, révisé) — sauf `missingAPIKey`, qui échouera de façon
+    /// identique et déterministe sur chaque chunk restant : autant arrêter
+    /// tout de suite plutôt que gaspiller du temps à le redécouvrir N fois.
     func run(audioURL: URL) async {
         state = .diarizing
         do {
             async let segmentsTask = diarizationProvider.diarize(audioURL)
-            let words = try await transcribeAllChunks(audioURL: audioURL)
+            let (words, hadMissingChunks) = try await transcribeAllChunks(audioURL: audioURL)
             let segments = try await segmentsTask
 
             state = .aligning
             let attributed = SpeakerAlignment.align(words: words, segments: segments)
             let turns = TranscriptFormatter.groupIntoTurns(attributed)
-            state = .done(turns)
+            state = .done(turns: turns, hadMissingChunks: hadMissingChunks)
         } catch {
             state = .failed(Self.userMessage(for: error))
         }
     }
 
-    private func transcribeAllChunks(audioURL: URL) async throws -> [TranscriptionWord] {
+    private func transcribeAllChunks(audioURL: URL) async throws -> (words: [TranscriptionWord], hadMissingChunks: Bool) {
         let asset = AVURLAsset(url: audioURL)
         let duration = try await asset.load(.duration).seconds
         let maxChunkDuration = AudioChunker.maxDuration(
@@ -82,18 +89,35 @@ final class MeetingTranscriptionController {
         let plans = AudioChunker.plan(totalDuration: duration, maxChunkDuration: maxChunkDuration, overlap: 10)
 
         var chunks: [TranscribedChunk] = []
+        var hadMissingChunks = false
         for (index, plan) in plans.enumerated() {
             state = .transcribing(chunk: index + 1, of: plans.count)
-            let chunkURL = try await Self.exportChunk(from: audioURL, range: plan)
-            defer { try? FileManager.default.removeItem(at: chunkURL) }
+            do {
+                let chunkURL = try await Self.exportChunk(from: audioURL, range: plan)
+                defer { try? FileManager.default.removeItem(at: chunkURL) }
 
-            let data = try Data(contentsOf: chunkURL)
-            let result = try await transcriptionProvider.transcribe(
-                TranscriptionRequest(audio: data, format: .m4a, language: "fr")
-            )
-            chunks.append(TranscribedChunk(plan: plan, words: result.words))
+                let data = try Data(contentsOf: chunkURL)
+                let result = try await transcriptionProvider.transcribe(
+                    TranscriptionRequest(audio: data, format: .m4a, language: "fr")
+                )
+                chunks.append(TranscribedChunk(plan: plan, words: result.words))
+            } catch TranscriptionError.missingAPIKey {
+                throw TranscriptionError.missingAPIKey
+            } catch {
+                hadMissingChunks = true
+                chunks.append(TranscribedChunk(plan: plan, words: [Self.missingChunkMarker(for: plan)]))
+            }
         }
-        return TranscriptStitcher.stitch(chunks)
+        return (TranscriptStitcher.stitch(chunks), hadMissingChunks)
+    }
+
+    /// Horodatage local au chunk (0 à sa durée) — `TranscriptStitcher`
+    /// décale par `plan.start` comme n'importe quel autre mot, et
+    /// `SpeakerAlignment` l'attribue à un locuteur comme n'importe quel
+    /// autre mot : le trou reste visible en clair dans le transcript plutôt
+    /// que silencieusement absent.
+    private static func missingChunkMarker(for plan: AudioChunkPlan) -> TranscriptionWord {
+        TranscriptionWord(text: "[transcription indisponible]", start: 0, end: plan.end - plan.start)
     }
 
     /// API vérifiée en la faisant tourner réellement (ADR-0005) :
