@@ -43,6 +43,13 @@ struct MeetingTranscriptView: View {
         }
         .navigationTitle("Transcript")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            if case .done(let turns) = controller.state, !turns.isEmpty {
+                ToolbarItem(placement: .primaryAction) {
+                    ShareLink(item: Self.plainText(for: turns))
+                }
+            }
+        }
         .task {
             await controller.run(audioURL: audioURL)
             // Le fichier n'est plus utile une fois le pipeline terminé (succès
@@ -87,5 +94,17 @@ struct MeetingTranscriptView: View {
             }
             return "Locuteur \(index + 1)"
         }
+    }
+
+    /// Format d'export : texte brut, un tour par paragraphe — lisible tel
+    /// quel collé dans n'importe quelle app (Notes, Mail…), pas de format
+    /// structuré (Markdown, JSON) tant que rien ne le demande. Réutilise
+    /// `displayLabels` pour rester cohérent avec ce qui est affiché à
+    /// l'écran.
+    private static func plainText(for turns: [SpeakerTurn]) -> String {
+        let labels = displayLabels(for: turns)
+        return zip(labels, turns)
+            .map { label, turn in "\(label) :\n\(turn.text)" }
+            .joined(separator: "\n\n")
     }
 }
