@@ -115,7 +115,13 @@ struct DiarizationSetupView: View {
             }
             .buttonStyle(.bordered)
 
-        case .ready, nil:
+        case .ready:
+            NavigationLink("Démarrer une réunion") {
+                MeetingRecordingView()
+            }
+            .buttonStyle(.borderedProminent)
+
+        case nil:
             EmptyView()
         }
     }
