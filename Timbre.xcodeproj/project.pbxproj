@@ -13,6 +13,7 @@
 		374B4A3E303F92BE0034B5D3 /* TimbreCore in Frameworks */ = {isa = PBXBuildFile; productRef = 374B4A3D303F92BE0034B5D3 /* TimbreCore */; };
 		374B4A41303F93840034B5D3 /* TimbreSecurity in Frameworks */ = {isa = PBXBuildFile; productRef = 374B4A40303F93840034B5D3 /* TimbreSecurity */; };
 		374B4A43303F93950034B5D3 /* TimbreSecurity in Frameworks */ = {isa = PBXBuildFile; productRef = 374B4A42303F93950034B5D3 /* TimbreSecurity */; };
+		396B13A653D05F3726673A02 /* TimbreDiarization in Frameworks */ = {isa = PBXBuildFile; productRef = DA99E3532CDE1583DB18E459 /* TimbreDiarization */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -106,6 +107,7 @@
 				374B4A3E303F92BE0034B5D3 /* TimbreCore in Frameworks */,
 				3748A778304C380600266C17 /* TimbreTranscription in Frameworks */,
 				374B4A41303F93840034B5D3 /* TimbreSecurity in Frameworks */,
+				396B13A653D05F3726673A02 /* TimbreDiarization in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -192,6 +194,7 @@
 				374B4A3D303F92BE0034B5D3 /* TimbreCore */,
 				374B4A40303F93840034B5D3 /* TimbreSecurity */,
 				3748A777304C380600266C17 /* TimbreTranscription */,
+				DA99E3532CDE1583DB18E459 /* TimbreDiarization */,
 			);
 			productName = Timbre;
 			productReference = 374B49FE303F8EF90034B5D3 /* Timbre.app */;
@@ -306,6 +309,7 @@
 				374B4A39303F918D0034B5D3 /* XCLocalSwiftPackageReference "Packages/TimbreCore" */,
 				374B4A3F303F93640034B5D3 /* XCLocalSwiftPackageReference "Packages/TimbreSecurity" */,
 				370E52EE304C363F00FEF2AC /* XCLocalSwiftPackageReference "Packages/TimbreTranscription" */,
+				BAC9A5CF03A595129103C882 /* XCLocalSwiftPackageReference "Packages/TimbreDiarization" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 374B49FF303F8EF90034B5D3 /* Products */;
@@ -797,6 +801,10 @@
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Packages/TimbreSecurity;
 		};
+		BAC9A5CF03A595129103C882 /* XCLocalSwiftPackageReference "Packages/TimbreDiarization" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/TimbreDiarization;
+		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -824,6 +832,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 374B4A3F303F93640034B5D3 /* XCLocalSwiftPackageReference "Packages/TimbreSecurity" */;
 			productName = TimbreSecurity;
+		};
+		DA99E3532CDE1583DB18E459 /* TimbreDiarization */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BAC9A5CF03A595129103C882 /* XCLocalSwiftPackageReference "Packages/TimbreDiarization" */;
+			productName = TimbreDiarization;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
