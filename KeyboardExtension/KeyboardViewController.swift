@@ -8,19 +8,36 @@ import SwiftUI
 import CoreFoundation
 import TimbreCore
 
+/// `enableInputClicksWhenVisible` (protocole `UIInputViewAudioFeedback`) se
+/// pose sur la vue réellement affichée à l'écran, pas sur le
+/// `UIInputViewController` — d'où ce sous-type dédié, posé comme `view` du
+/// controller dans `loadView()`. `UIView` toute nue par ailleurs, le reste
+/// du contenu (SwiftUI, bouton clavier suivant) est ajouté par-dessus comme
+/// avant.
+private final class InputClickView: UIView, UIInputViewAudioFeedback {
+    var enableInputClicksWhenVisible: Bool { true }
+}
+
 class KeyboardViewController: UIInputViewController {
 
     @IBOutlet var nextKeyboardButton: UIButton!
 
     private let viewModel = DictationViewModel()
-    private let impactGenerator = UIImpactFeedbackGenerator(style: .light)
+
+    /// Dernière insertion d'un espace par l'utilisateur (pas par l'app ou un
+    /// résultat de dictée) — sert uniquement à détecter le double-espace,
+    /// voir `insertText(fromUserTap:)`.
+    private var lastSpaceInsertedAt: Date?
+
+    override func loadView() {
+        self.view = InputClickView()
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
         setUpKeyboardView()
         setUpNextKeyboardButton()
-        impactGenerator.prepare()
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -60,7 +77,7 @@ class KeyboardViewController: UIInputViewController {
         let keyboardView = KeyboardView(
             layout: .azerty,
             viewModel: viewModel,
-            onKeyTap: { [weak self] text in self?.textDocumentProxy.insertText(text) },
+            onKeyTap: { [weak self] text in self?.insertText(fromUserTap: text) },
             onDeleteTap: { [weak self] in self?.textDocumentProxy.deleteBackward() },
             onMicTap: { [weak self] in self?.startDictation() },
             onStopRecordingTap: { [weak self] in self?.viewModel.stopRecording() },
@@ -81,12 +98,46 @@ class KeyboardViewController: UIInputViewController {
         hostingController.didMove(toParent: self)
     }
 
-    /// Sans Full Access, le moteur haptique d'une extension clavier est
-    /// muet — pas d'erreur, juste aucun effet. On évite l'appel plutôt que
-    /// de laisser croire que ça devrait vibrer.
+    /// Correction après retour terrain : un premier essai utilisait
+    /// `AudioServicesPlaySystemSound` (vibration système brute) en
+    /// affirmant à tort dans ce commentaire que le problème avait été
+    /// "confirmé sur device" — ça ne l'avait pas été, seulement déduit de
+    /// connaissances générales sur la plateforme. Ressenti en vrai : un buzz
+    /// franc, sans rapport avec le clavier système, jugé mauvais à l'usage.
+    ///
+    /// Mécanisme correct, celui qu'utilise réellement le clavier système :
+    /// `UIDevice.playInputClick()`, activé par `InputClickView` (voir plus
+    /// haut) posée comme `view` du controller. Différence clé avec
+    /// `AudioServicesPlaySystemSound` : ça respecte le réglage utilisateur
+    /// (Réglages > Sons et retour haptique > Retours clavier — silencieux si
+    /// désactivé, comme le vrai clavier), et ne nécessite pas Full Access
+    /// (mécanisme UIKit de base, sans lien avec réseau/App Group) — d'où le
+    /// retrait du `guard hasFullAccess` qui n'avait pas lieu d'être ici.
     private func triggerHapticFeedback() {
-        guard hasFullAccess else { return }
-        impactGenerator.impactOccurred()
+        UIDevice.current.playInputClick()
+    }
+
+    /// Point d'entrée unique pour une insertion venant d'un tap utilisateur
+    /// (lettre, chiffre, ponctuation, espace) — pas pour le texte inséré par
+    /// une dictée terminée (`onResultReady`/`viewWillAppear`), qui ne doit
+    /// jamais déclencher la détection de double-espace. Reproduit le
+    /// comportement du clavier système : un second espace tapé juste après
+    /// le premier remplace les deux par ". ".
+    private func insertText(fromUserTap text: String) {
+        guard text == " " else {
+            lastSpaceInsertedAt = nil
+            textDocumentProxy.insertText(text)
+            return
+        }
+
+        if let lastSpace = lastSpaceInsertedAt, Date().timeIntervalSince(lastSpace) < 0.3 {
+            textDocumentProxy.deleteBackward()
+            textDocumentProxy.insertText(". ")
+            lastSpaceInsertedAt = nil
+        } else {
+            textDocumentProxy.insertText(" ")
+            lastSpaceInsertedAt = Date()
+        }
     }
 
     /// Poste toujours la notification Darwin d'abord (coût quasi nul si
