@@ -12,37 +12,50 @@ struct SettingsView: View {
 
     var body: some View {
         NavigationStack {
-            Form {
-                Section {
-                    SecureField("Clé API Groq", text: $apiKey)
-                        .textContentType(.password)
-                        .autocorrectionDisabled()
-                } header: {
-                    Text("Groq")
-                } footer: {
-                    Text("Stockée dans le Trousseau, jamais dans les réglages de l'app ni dans les journaux.")
-                }
+            ZStack {
+                AuroraBackground()
 
-                Section {
-                    TextField("Ex. Kubernetes, Aymeric, Groq…", text: $vocabulary, axis: .vertical)
-                        .lineLimit(3...6)
-                } header: {
-                    Text("Vocabulaire personnalisé")
-                } footer: {
-                    Text("Noms propres ou jargon technique fréquents — améliore leur reconnaissance par Whisper.")
-                }
+                Form {
+                    Section {
+                        SecureField("Clé API Groq", text: $apiKey)
+                            .textContentType(.password)
+                            .autocorrectionDisabled()
+                    } header: {
+                        Text("Groq")
+                    } footer: {
+                        Text("Stockée dans le Trousseau, jamais dans les réglages de l'app ni dans les journaux.")
+                    }
+                    .listRowBackground(Color.timbreSurface.opacity(0.55))
 
-                Section {
-                    Toggle("Nettoyer automatiquement le texte", isOn: $cleanupEnabled)
-                } footer: {
-                    Text("Retire les hésitations et corrige la ponctuation via un second appel IA, après la transcription. Expérimental : désactivé par défaut.")
-                }
+                    Section {
+                        TextField("Ex. Kubernetes, Aymeric, Groq…", text: $vocabulary, axis: .vertical)
+                            .lineLimit(3...6)
+                    } header: {
+                        Text("Vocabulaire personnalisé")
+                    } footer: {
+                        Text("Noms propres ou jargon technique fréquents — améliore leur reconnaissance par Whisper.")
+                    }
+                    .listRowBackground(Color.timbreSurface.opacity(0.55))
 
-                if savedConfirmation {
-                    Text("Enregistrée ✓")
-                        .foregroundStyle(.green)
-                        .font(.footnote)
+                    Section {
+                        Toggle("Nettoyer automatiquement le texte", isOn: $cleanupEnabled)
+                            .tint(Color.timbreViolet)
+                    } footer: {
+                        Text("Retire les hésitations et corrige la ponctuation via un second appel IA, après la transcription. Expérimental : désactivé par défaut.")
+                    }
+                    .listRowBackground(Color.timbreSurface.opacity(0.55))
+
+                    if savedConfirmation {
+                        HStack(spacing: 8) {
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundStyle(LinearGradient.timbreAccent)
+                            Text("Enregistré")
+                                .foregroundStyle(Color.timbreTextPrimary)
+                        }
+                        .listRowBackground(Color.clear)
+                    }
                 }
+                .scrollContentBackground(.hidden)
             }
             .navigationTitle("Réglages")
             .toolbar {
@@ -50,6 +63,7 @@ struct SettingsView: View {
                     Button("Enregistrer") {
                         save()
                     }
+                    .tint(Color.timbreViolet)
                 }
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Fermer") {
@@ -59,6 +73,7 @@ struct SettingsView: View {
             }
             .onAppear(perform: load)
         }
+        .preferredColorScheme(.dark)
     }
 
     private func load() {

@@ -1,8 +1,11 @@
 import SwiftUI
 import TimbreCore
 
-/// Thème sombre forcé, indépendant de l'apparence système — c'est le look
-/// visé (cf. capture de référence), pas encore adaptatif clair/sombre.
+/// Thème sombre forcé, indépendant de l'apparence système — même identité
+/// visuelle que le reste de l'app (violet/corail, voir `App/DesignSystem`),
+/// dupliquée ici en constantes locales plutôt que partagée : le clavier ne
+/// peut importer que `TimbreCore`/`TimbreSecurity` (budget mémoire, C2),
+/// jamais du code du target App.
 struct KeyboardView: View {
     let layout: KeyboardLayout
     var viewModel: DictationViewModel
@@ -57,8 +60,14 @@ struct KeyboardView: View {
     @State private var levelHistory: [Float] = []
     private let waveformBarCount = 20
 
-    private let keyBackground = Color(white: 0.30)
-    private let cardBackground = Color(white: 0.15)
+    private let keyBackground = Color(red: 0.145, green: 0.137, blue: 0.192)
+    private let cardBackground = Color(red: 0.055, green: 0.051, blue: 0.082)
+    private let violet = Color(red: 0.588, green: 0.518, blue: 1.0)
+    private let coral = Color(red: 1.0, green: 0.588, blue: 0.361)
+    private let danger = Color(red: 1.0, green: 0.420, blue: 0.420)
+    private var accentGradient: LinearGradient {
+        LinearGradient(colors: [violet, coral], startPoint: .leading, endPoint: .trailing)
+    }
 
     private var isUppercase: Bool { shiftState != .off }
 
@@ -133,19 +142,20 @@ struct KeyboardView: View {
                     Text("Start")
                     Image(systemName: "waveform")
                 }
-                .font(.subheadline.weight(.medium))
-                .foregroundStyle(.black)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(.white)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 8)
-                .background(Color.white)
+                .background(accentGradient)
                 .clipShape(Capsule())
+                .shadow(color: violet.opacity(0.4), radius: 8, y: 3)
             }
             .buttonStyle(.plain)
 
         case .fullAccessRequired:
             Text("Autorise l'accès complet dans Réglages")
                 .font(.caption2)
-                .foregroundStyle(.orange)
+                .foregroundStyle(coral)
 
         case .opening:
             progressPill(label: "Ouverture de Timbre…") {
@@ -168,7 +178,8 @@ struct KeyboardView: View {
             .foregroundStyle(.white)
             .padding(.horizontal, 12)
             .padding(.vertical, 6)
-            .background(Color.white.opacity(0.15))
+            .background(Color.white.opacity(0.1))
+            .overlay(Capsule().strokeBorder(Color.white.opacity(0.12), lineWidth: 1))
             .clipShape(Capsule())
             .onChange(of: viewModel.audioLevel) { _, newLevel in
                 levelHistory.append(newLevel)
@@ -192,7 +203,7 @@ struct KeyboardView: View {
                 .foregroundStyle(.white)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 6)
-                .background(Color.red.opacity(0.6))
+                .background(danger.opacity(0.7))
                 .clipShape(Capsule())
             }
             .buttonStyle(.plain)
@@ -203,7 +214,7 @@ struct KeyboardView: View {
         HStack(alignment: .center, spacing: 3) {
             ForEach(Array(levelHistory.enumerated()), id: \.offset) { _, level in
                 RoundedRectangle(cornerRadius: 1.5)
-                    .fill(Color.white)
+                    .fill(accentGradient)
                     .frame(width: 3, height: barHeight(for: level))
             }
         }
@@ -216,7 +227,7 @@ struct KeyboardView: View {
 
     private func progressPill(label: String, @ViewBuilder trailing: () -> some View) -> some View {
         HStack(spacing: 8) {
-            ProgressView().tint(.white)
+            ProgressView().tint(violet)
             Text(label)
                 .font(.caption)
                 .foregroundStyle(.white)
@@ -224,7 +235,8 @@ struct KeyboardView: View {
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 6)
-        .background(Color.white.opacity(0.15))
+        .background(Color.white.opacity(0.1))
+        .overlay(Capsule().strokeBorder(Color.white.opacity(0.12), lineWidth: 1))
         .clipShape(Capsule())
     }
 
@@ -240,8 +252,8 @@ struct KeyboardView: View {
             .foregroundStyle(.white)
             .frame(maxWidth: .infinity)
             .padding(.vertical, 12)
-            .background(pendingAccentLetter == key ? Color.white.opacity(0.25) : keyBackground)
-            .clipShape(RoundedRectangle(cornerRadius: 6))
+            .background(pendingAccentLetter == key ? violet.opacity(0.45) : keyBackground)
+            .clipShape(RoundedRectangle(cornerRadius: 8))
             .contentShape(Rectangle())
             .gesture(letterGesture(for: key))
     }
@@ -323,7 +335,7 @@ struct KeyboardView: View {
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 12)
                 .background(keyBackground)
-                .clipShape(RoundedRectangle(cornerRadius: 6))
+                .clipShape(RoundedRectangle(cornerRadius: 8))
         }
         .buttonStyle(.plain)
     }
@@ -348,8 +360,8 @@ struct KeyboardView: View {
                     .foregroundStyle(.white)
                     .padding(.horizontal, 10)
                     .padding(.vertical, 8)
-                    .background(hoveredVariant == variant ? Color.white.opacity(0.35) : Color.clear)
-                    .clipShape(RoundedRectangle(cornerRadius: 6))
+                    .background(hoveredVariant == variant ? violet.opacity(0.55) : Color.clear)
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
                     .background(
                         GeometryReader { geometry in
                             Color.clear
@@ -363,8 +375,11 @@ struct KeyboardView: View {
                     )
             }
         }
-        .background(Color(white: 0.35))
-        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .padding(4)
+        .background(keyBackground)
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(Color.white.opacity(0.1), lineWidth: 1))
+        .shadow(color: .black.opacity(0.4), radius: 12, y: 6)
     }
 
     private var shiftKey: some View {
@@ -372,11 +387,11 @@ struct KeyboardView: View {
             tapShift()
         } label: {
             Image(systemName: shiftState == .locked ? "capslock.fill" : (shiftState == .shifted ? "shift.fill" : "shift"))
-                .foregroundStyle(.white)
+                .foregroundStyle(isUppercase ? violet : .white)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 12)
                 .background(keyBackground)
-                .clipShape(RoundedRectangle(cornerRadius: 6))
+                .clipShape(RoundedRectangle(cornerRadius: 8))
         }
         .buttonStyle(.plain)
     }
@@ -391,7 +406,7 @@ struct KeyboardView: View {
             .frame(maxWidth: .infinity)
             .padding(.vertical, 12)
             .background(keyBackground)
-            .clipShape(RoundedRectangle(cornerRadius: 6))
+            .clipShape(RoundedRectangle(cornerRadius: 8))
             .contentShape(Rectangle())
             .gesture(
                 DragGesture(minimumDistance: 0)
@@ -410,7 +425,7 @@ struct KeyboardView: View {
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 12)
                 .background(keyBackground)
-                .clipShape(RoundedRectangle(cornerRadius: 6))
+                .clipShape(RoundedRectangle(cornerRadius: 8))
         }
         .buttonStyle(.plain)
     }
@@ -426,7 +441,7 @@ struct KeyboardView: View {
                     .frame(width: 60)
                     .padding(.vertical, 12)
                     .background(keyBackground)
-                    .clipShape(RoundedRectangle(cornerRadius: 6))
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
             }
             .buttonStyle(.plain)
 
@@ -435,11 +450,11 @@ struct KeyboardView: View {
                 onKeyTap(" ")
             } label: {
                 Text("Timbre")
-                    .foregroundStyle(.white)
+                    .foregroundStyle(.white.opacity(0.85))
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)
                     .background(keyBackground)
-                    .clipShape(RoundedRectangle(cornerRadius: 6))
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
             }
             .buttonStyle(.plain)
 

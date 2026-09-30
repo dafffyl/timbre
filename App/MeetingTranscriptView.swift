@@ -6,10 +6,9 @@
 import SwiftUI
 import TimbreDiarization
 
-/// Écran fonctionnel avant tout (ADR-0005), pas encore la refonte visuelle
-/// prévue plus tard. Lance le pipeline complet (diarisation + chunking +
-/// transcription + alignement, voir `MeetingTranscriptionController`) dès
-/// l'apparition, sur le fichier reçu de `MeetingRecordingView`.
+/// Lance le pipeline complet (diarisation + chunking + transcription +
+/// alignement, voir `MeetingTranscriptionController`) dès l'apparition, sur
+/// le fichier reçu de `MeetingRecordingView`.
 ///
 /// Une fois terminé (`.done`), affiche directement `MeetingHistoryDetailView`
 /// plutôt qu'un rendu séparé — un seul endroit qui sait afficher/renommer un
@@ -22,26 +21,35 @@ struct MeetingTranscriptView: View {
     @State private var hadMissingChunks = false
 
     var body: some View {
-        Group {
+        ZStack {
+            AuroraBackground()
+
             switch controller.state {
             case .idle, .diarizing:
-                ProgressView("Analyse des locuteurs…")
+                progress("Analyse des locuteurs…")
 
             case .transcribing(let chunk, let total):
-                ProgressView("Transcription (\(chunk)/\(total))…")
+                progress("Transcription (\(chunk)/\(total))…")
 
             case .aligning:
-                ProgressView("Assemblage du transcript…")
+                progress("Assemblage du transcript…")
 
             case .failed(let message):
-                VStack(spacing: 12) {
-                    Image(systemName: "exclamationmark.triangle.fill")
-                        .foregroundStyle(.red)
-                        .font(.largeTitle)
+                VStack(spacing: 14) {
+                    ZStack {
+                        Circle()
+                            .fill(Color.timbreDanger.opacity(0.16))
+                            .frame(width: 88, height: 88)
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .font(.system(size: 34, weight: .semibold))
+                            .foregroundStyle(Color.timbreDanger)
+                    }
                     Text(message)
+                        .font(.timbreBody(15))
+                        .foregroundStyle(Color.timbreTextSecondary)
                         .multilineTextAlignment(.center)
                 }
-                .padding()
+                .padding(24)
 
             case .done:
                 if let savedRecord {
@@ -56,17 +64,18 @@ struct MeetingTranscriptView: View {
                                 "Certains passages n'ont pas pu être transcrits (réseau).",
                                 systemImage: "exclamationmark.triangle.fill"
                             )
-                            .font(.footnote)
-                            .foregroundStyle(.orange)
-                            .padding(8)
+                            .font(.timbreCaption())
+                            .foregroundStyle(Color.timbreCoral)
+                            .padding(10)
                             .frame(maxWidth: .infinity)
-                            .background(Color.orange.opacity(0.15))
+                            .background(Color.timbreCoral.opacity(0.14))
                         }
                         MeetingHistoryDetailView(record: savedRecord)
                     }
                 }
             }
         }
+        .preferredColorScheme(.dark)
         .navigationTitle("Transcript")
         .navigationBarTitleDisplayMode(.inline)
         .task {
@@ -84,6 +93,17 @@ struct MeetingTranscriptView: View {
                 hadMissingChunks = missingChunks
                 savedRecord = record
             }
+        }
+    }
+
+    private func progress(_ label: String) -> some View {
+        VStack(spacing: 16) {
+            ProgressView()
+                .tint(Color.timbreViolet)
+                .scaleEffect(1.3)
+            Text(label)
+                .font(.timbreBody(15))
+                .foregroundStyle(Color.timbreTextSecondary)
         }
     }
 }

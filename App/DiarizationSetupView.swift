@@ -6,9 +6,7 @@
 import SwiftUI
 import TimbreDiarization
 
-/// Écran de provisionnement des modèles de diarisation — vue fonctionnelle
-/// avant tout (ADR-0004 : l'UI vient après la logique), pas encore passée
-/// par la refonte visuelle prévue plus tard pour le reste de l'app.
+/// Écran de provisionnement des modèles de diarisation.
 ///
 /// Ne construit PAS la fonctionnalité réunion elle-même (enregistrement,
 /// transcription, affichage du transcript par locuteur) — seulement le
@@ -19,33 +17,40 @@ struct DiarizationSetupView: View {
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 20) {
-                Spacer()
+            ZStack {
+                AuroraBackground()
 
-                Image(systemName: iconName)
-                    .font(.system(size: 48))
-                    .foregroundStyle(iconColor)
+                VStack(spacing: 24) {
+                    Spacer()
 
-                Text(title)
-                    .font(.title2.bold())
-                    .multilineTextAlignment(.center)
+                    iconBadge
 
-                Text(message)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal)
+                    VStack(spacing: 10) {
+                        Text(title)
+                            .font(.timbreTitle(22))
+                            .foregroundStyle(Color.timbreTextPrimary)
+                            .multilineTextAlignment(.center)
 
-                if viewModel.isChecking {
-                    ProgressView()
-                        .padding(.top, 4)
-                } else {
-                    actionButton
+                        Text(message)
+                            .font(.timbreBody(15))
+                            .foregroundStyle(Color.timbreTextSecondary)
+                            .multilineTextAlignment(.center)
+                    }
+                    .padding(.horizontal, 12)
+
+                    if viewModel.isChecking {
+                        ProgressView()
+                            .tint(Color.timbreViolet)
+                            .padding(.top, 4)
+                    } else {
+                        actionButton
+                    }
+
+                    Spacer()
+                    Spacer()
                 }
-
-                Spacer()
-                Spacer()
+                .padding(24)
             }
-            .padding()
             .navigationTitle("Transcription de réunion")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -54,7 +59,19 @@ struct DiarizationSetupView: View {
                 }
             }
         }
+        .preferredColorScheme(.dark)
         .task { await viewModel.refresh() }
+    }
+
+    private var iconBadge: some View {
+        ZStack {
+            Circle()
+                .fill(iconColor.opacity(0.16))
+                .frame(width: 96, height: 96)
+            Image(systemName: iconName)
+                .font(.system(size: 38, weight: .semibold))
+                .foregroundStyle(iconColor)
+        }
     }
 
     private var iconName: String {
@@ -66,12 +83,12 @@ struct DiarizationSetupView: View {
         }
     }
 
-    private var iconColor: Color {
+    private var iconColor: AnyShapeStyle {
         switch viewModel.state {
-        case .ready: .green
-        case .failed: .red
-        case .needsWiFi: .orange
-        case .needsConsent, nil: .accentColor
+        case .ready: AnyShapeStyle(LinearGradient.timbreAccent)
+        case .failed: AnyShapeStyle(Color.timbreDanger)
+        case .needsWiFi: AnyShapeStyle(Color.timbreCoral)
+        case .needsConsent, nil: AnyShapeStyle(Color.timbreViolet)
         }
     }
 
@@ -107,19 +124,19 @@ struct DiarizationSetupView: View {
             Button("Télécharger sur Wi-Fi (~500 Mo)") {
                 Task { await viewModel.grantConsent() }
             }
-            .buttonStyle(.borderedProminent)
+            .buttonStyle(TimbrePrimaryButtonStyle())
 
         case .needsWiFi, .failed:
             Button("Réessayer") {
                 Task { await viewModel.refresh() }
             }
-            .buttonStyle(.bordered)
+            .buttonStyle(TimbreSecondaryButtonStyle())
 
         case .ready:
             NavigationLink("Démarrer une réunion") {
                 MeetingRecordingView()
             }
-            .buttonStyle(.borderedProminent)
+            .buttonStyle(TimbrePrimaryButtonStyle())
 
         case nil:
             EmptyView()
