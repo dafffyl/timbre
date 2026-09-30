@@ -100,24 +100,30 @@ estimation, puisqu'on contrôle nous-mêmes tout l'encodage de bout en bout
 ### Cas limites
 
 **1. Une transcription de chunk échoue après épuisement des tentatives**
-(`RetryPolicy` déjà en place dans `GroqProvider`) — 🔶 **Décision proposée** :
-faire échouer toute la réunion plutôt que produire un transcript à trous.
-Plus simple, et évite d'afficher un résultat partiel qu'on présenterait
-comme complet. Un mode "reprendre les chunks manquants" est un
-raffinement possible si ça s'avère frustrant en usage réel sur de longues
-réunions (perdre 40 minutes de traitement pour l'échec d'un seul chunk sur
-six serait pénible) — pas construit maintenant, faute de retour d'usage
-réel pour le justifier.
+(`RetryPolicy` déjà en place dans `GroqProvider`) — **révisé** : la décision
+initiale ("faire échouer toute la réunion") est remplacée par une
+dégradation par chunk. Raison du changement : perdre 40 minutes de
+traitement sur une longue réunion à cause d'un seul chunk sur six qui a
+raté un appel réseau est disproportionné par rapport au coût de dégrader
+juste ce chunk-là. Chaque chunk (export **et** transcription) est tenté
+indépendamment ; un échec insère un mot-marqueur
+(`"[transcription indisponible]"`) à la place du texte de ce chunk plutôt
+que d'interrompre le pipeline, et le résultat final signale qu'il est
+partiel. Le marqueur, une fois aligné avec les locuteurs comme n'importe
+quel mot, reste visible en clair dans le transcript ("Locuteur 2 :
+[transcription indisponible]") — pas de trou silencieux qui donnerait
+l'impression d'un résultat complet.
 
 **2. La diarisation échoue** (modèles pas prêts — ne devrait pas arriver si
 `DiarizationSetupView` a fait son travail avant, mais pas garanti si
 l'utilisateur enchaîne sans repasser par cet écran — ou erreur FluidAudio en
-cours de route) — même traitement que le cas 1 : échec de toute la réunion.
-Alternative envisagée et écartée : dégrader vers un transcript sans
-locuteurs identifiés. Écartée parce que ça masquerait un vrai problème
-(modèles non prêts) derrière un résultat qui a l'air de fonctionner mais ne
-fait pas ce que l'utilisateur attend (distinguer les locuteurs — la raison
-d'être du produit).
+cours de route) — **reste** un échec de toute la réunion, contrairement au
+cas 1 : la nature du problème diffère (un souci de configuration/environnement
+plutôt qu'un aléa réseau ponctuel sur un appel parmi plusieurs). Alternative
+envisagée et écartée : dégrader vers un transcript sans locuteurs identifiés.
+Écartée parce que ça masquerait un vrai problème (modèles non prêts) derrière
+un résultat qui a l'air de fonctionner mais ne fait pas ce que l'utilisateur
+attend (distinguer les locuteurs — la raison d'être du produit).
 
 **3. Réunion avec un seul locuteur, ou diarisation qui ne détecte qu'un seul
 segment** — fonctionne sans cas particulier : tous les mots s'alignent sur
