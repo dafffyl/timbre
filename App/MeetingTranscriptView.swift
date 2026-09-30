@@ -19,6 +19,7 @@ struct MeetingTranscriptView: View {
 
     @State private var controller = MeetingTranscriptionController()
     @State private var savedRecord: MeetingRecord?
+    @State private var hadMissingChunks = false
 
     var body: some View {
         Group {
@@ -44,7 +45,25 @@ struct MeetingTranscriptView: View {
 
             case .done:
                 if let savedRecord {
-                    MeetingHistoryDetailView(record: savedRecord)
+                    VStack(spacing: 0) {
+                        // Ponctuel, pas persisté : le marqueur
+                        // "[transcription indisponible]" reste de toute
+                        // façon visible en clair dans le transcript lui-même
+                        // (ADR-0005), cet avertissement n'est qu'un signal
+                        // immédiat en plus.
+                        if hadMissingChunks {
+                            Label(
+                                "Certains passages n'ont pas pu être transcrits (réseau).",
+                                systemImage: "exclamationmark.triangle.fill"
+                            )
+                            .font(.footnote)
+                            .foregroundStyle(.orange)
+                            .padding(8)
+                            .frame(maxWidth: .infinity)
+                            .background(Color.orange.opacity(0.15))
+                        }
+                        MeetingHistoryDetailView(record: savedRecord)
+                    }
                 }
             }
         }
@@ -57,11 +76,12 @@ struct MeetingTranscriptView: View {
             // (voir MeetingRecord), jamais l'audio (ADR-0005).
             try? FileManager.default.removeItem(at: audioURL)
 
-            if case .done(let turns) = controller.state {
+            if case .done(let turns, let missingChunks) = controller.state {
                 let record = MeetingRecord(turns: turns)
                 if !turns.isEmpty {
                     DiarizationEnvironment.historyStore.save(record)
                 }
+                hadMissingChunks = missingChunks
                 savedRecord = record
             }
         }
