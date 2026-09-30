@@ -56,18 +56,54 @@ struct MeetingHistoryView: View {
 }
 
 struct MeetingHistoryDetailView: View {
-    let record: MeetingRecord
+    @State private var record: MeetingRecord
+    @State private var renamingSpeaker: SpeakerID?
+    @State private var newName = ""
+
+    init(record: MeetingRecord) {
+        _record = State(initialValue: record)
+    }
 
     var body: some View {
-        TranscriptTurnsView(turns: record.turns)
-            .navigationTitle(record.recordedAt.formatted(date: .abbreviated, time: .shortened))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                if !record.turns.isEmpty {
-                    ToolbarItem(placement: .primaryAction) {
-                        ShareLink(item: TranscriptFormatting.plainText(for: record.turns))
-                    }
+        TranscriptTurnsView(
+            turns: record.turns,
+            names: record.speakerNames,
+            onTapSpeaker: { speaker in
+                renamingSpeaker = speaker
+                newName = record.speakerNames[speaker.rawValue] ?? ""
+            }
+        )
+        .navigationTitle(record.recordedAt.formatted(date: .abbreviated, time: .shortened))
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            if !record.turns.isEmpty {
+                ToolbarItem(placement: .primaryAction) {
+                    ShareLink(item: TranscriptFormatting.plainText(for: record.turns, names: record.speakerNames))
                 }
             }
+        }
+        .alert(
+            "Renommer le locuteur",
+            isPresented: Binding(
+                get: { renamingSpeaker != nil },
+                set: { isPresented in if !isPresented { renamingSpeaker = nil } }
+            )
+        ) {
+            TextField("Nom", text: $newName)
+            Button("Enregistrer") { saveRename() }
+            Button("Annuler", role: .cancel) { renamingSpeaker = nil }
+        }
+    }
+
+    /// Vide le nom personnalisé (retombe sur "Locuteur N") plutôt que
+    /// d'enregistrer une chaîne vide qui s'afficherait littéralement comme
+    /// nom — `displayLabels` traite déjà "vide" comme "pas de nom
+    /// personnalisé" (`TranscriptRendering.swift`), cohérent des deux côtés.
+    private func saveRename() {
+        guard let speaker = renamingSpeaker else { return }
+        let trimmed = newName.trimmingCharacters(in: .whitespacesAndNewlines)
+        record.speakerNames[speaker.rawValue] = trimmed.isEmpty ? nil : trimmed
+        DiarizationEnvironment.historyStore.update(record)
+        renamingSpeaker = nil
     }
 }

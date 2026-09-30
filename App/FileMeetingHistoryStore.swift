@@ -38,6 +38,13 @@ struct FileMeetingHistoryStore: MeetingHistoryStore {
         persist(all)
     }
 
+    func update(_ record: MeetingRecord) {
+        var all = loadAll()
+        guard let index = all.firstIndex(where: { $0.id == record.id }) else { return }
+        all[index] = record
+        persist(all)
+    }
+
     func delete(id: MeetingRecord.ID) {
         persist(loadAll().filter { $0.id != id })
     }
