@@ -38,7 +38,7 @@ struct MeetingTranscriptView: View {
                 .padding()
 
             case .done(let turns):
-                transcriptList(turns)
+                TranscriptTurnsView(turns: turns)
             }
         }
         .navigationTitle("Transcript")
@@ -46,65 +46,20 @@ struct MeetingTranscriptView: View {
         .toolbar {
             if case .done(let turns) = controller.state, !turns.isEmpty {
                 ToolbarItem(placement: .primaryAction) {
-                    ShareLink(item: Self.plainText(for: turns))
+                    ShareLink(item: TranscriptFormatting.plainText(for: turns))
                 }
             }
         }
         .task {
             await controller.run(audioURL: audioURL)
-            // Le fichier n'est plus utile une fois le pipeline terminé (succès
-            // ou échec) — l'utilisateur ne revient jamais en arrière dessus,
-            // pas d'historique dans cet incrément (ADR-0005).
+            // Le fichier audio n'est plus utile une fois le pipeline terminé
+            // (succès ou échec) — seul le texte du transcript est conservé
+            // (voir MeetingRecord), jamais l'audio (ADR-0005).
             try? FileManager.default.removeItem(at: audioURL)
-        }
-    }
 
-    @ViewBuilder
-    private func transcriptList(_ turns: [SpeakerTurn]) -> some View {
-        if turns.isEmpty {
-            Text("Aucune parole détectée.")
-                .foregroundStyle(.secondary)
-        } else {
-            let labels = Self.displayLabels(for: turns)
-            List(Array(turns.enumerated()), id: \.offset) { index, turn in
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(labels[index])
-                        .font(.caption.bold())
-                        .foregroundStyle(.secondary)
-                    Text(turn.text)
-                }
+            if case .done(let turns) = controller.state, !turns.isEmpty {
+                DiarizationEnvironment.historyStore.save(MeetingRecord(turns: turns))
             }
         }
-    }
-
-    /// "Locuteur 1", "Locuteur 2"… dans l'ordre de première apparition —
-    /// plus lisible que les identifiants bruts de FluidAudio ("S1", "S2"),
-    /// et correspond au vocabulaire du produit (voir README). Purement de
-    /// l'affichage, ne touche pas `SpeakerID` lui-même.
-    private static func displayLabels(for turns: [SpeakerTurn]) -> [String] {
-        var order: [SpeakerID] = []
-        for turn in turns {
-            if let speaker = turn.speaker, !order.contains(speaker) {
-                order.append(speaker)
-            }
-        }
-        return turns.map { turn in
-            guard let speaker = turn.speaker, let index = order.firstIndex(of: speaker) else {
-                return "Non identifié"
-            }
-            return "Locuteur \(index + 1)"
-        }
-    }
-
-    /// Format d'export : texte brut, un tour par paragraphe — lisible tel
-    /// quel collé dans n'importe quelle app (Notes, Mail…), pas de format
-    /// structuré (Markdown, JSON) tant que rien ne le demande. Réutilise
-    /// `displayLabels` pour rester cohérent avec ce qui est affiché à
-    /// l'écran.
-    private static func plainText(for turns: [SpeakerTurn]) -> String {
-        let labels = displayLabels(for: turns)
-        return zip(labels, turns)
-            .map { label, turn in "\(label) :\n\(turn.text)" }
-            .joined(separator: "\n\n")
     }
 }

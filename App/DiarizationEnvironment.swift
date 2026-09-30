@@ -24,4 +24,9 @@ enum DiarizationEnvironment {
         networkStatus: NWPathNetworkStatusProvider(),
         stateStore: ModelProvisioningPreferences()
     )
+
+    /// `nonisolated` pour la même raison : `FileMeetingHistoryStore` est un
+    /// `struct` sans état mutable propre (tout passe par le fichier), sûr à
+    /// lire depuis n'importe quel contexte.
+    nonisolated static let historyStore: any MeetingHistoryStore = FileMeetingHistoryStore()
 }
