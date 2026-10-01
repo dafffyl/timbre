@@ -25,6 +25,12 @@ final class MeetingRecordingController {
     private(set) var elapsed: TimeInterval = 0
     private(set) var audioLevel: Float = 0
 
+    /// Non-`nil` quand une coupure audio système (appel, Siri...) a forcé
+    /// l'arrêt sans reprise possible (voir `BackgroundRecorder`) — la vue
+    /// l'observe pour basculer automatiquement vers la transcription du
+    /// fichier déjà enregistré plutôt que de perdre la réunion.
+    private(set) var autoStoppedURL: URL?
+
     /// 4h, pas 180s comme la dictée (`DictationController`) : le risque à
     /// couvrir ici n'est pas une dictée qui déraille mais un oubli d'arrêter
     /// l'enregistrement d'une vraie réunion.
@@ -46,10 +52,18 @@ final class MeetingRecordingController {
             state = .failed("Impossible de démarrer l'enregistrement.")
             return
         }
+        recorder.onUnrecoverableInterruption = { [weak self] in
+            self?.handleUnrecoverableInterruption()
+        }
         startedAt = Date()
         elapsed = 0
         state = .recording
         startPolling()
+    }
+
+    private func handleUnrecoverableInterruption() {
+        guard state == .recording else { return }
+        autoStoppedURL = stop()
     }
 
     /// Retourne l'URL du fichier enregistré, ou `nil` si rien n'a été
