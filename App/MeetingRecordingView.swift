@@ -11,6 +11,7 @@ struct MeetingRecordingView: View {
     @State private var controller = MeetingRecordingController()
     @State private var recordedURL: URL?
     @State private var showTranscript = false
+    @State private var showInterruptionNotice = false
 
     var body: some View {
         VStack(spacing: 24) {
@@ -46,6 +47,16 @@ struct MeetingRecordingView: View {
             if let recordedURL {
                 MeetingTranscriptView(audioURL: recordedURL)
             }
+        }
+        .onChange(of: controller.autoStoppedURL) { _, newURL in
+            guard let newURL else { return }
+            recordedURL = newURL
+            showInterruptionNotice = true
+        }
+        .alert("Enregistrement interrompu", isPresented: $showInterruptionNotice) {
+            Button("OK") { showTranscript = true }
+        } message: {
+            Text("Une coupure audio système (appel, Siri, alarme...) a arrêté l'enregistrement. Transcription de ce qui a été capturé jusque-là.")
         }
     }
 
