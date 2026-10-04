@@ -14,22 +14,41 @@ struct ContentView: View {
     private let router = LaunchURLRouter.shared
 
     var body: some View {
-        VStack(spacing: 20) {
-            Text("Timbre")
-                .font(.largeTitle)
+        ZStack {
+            AuroraBackground()
 
-            statusView
+            ScrollView {
+                VStack(spacing: 28) {
+                    header
 
-            Button("Transcription de réunion") { showDiarizationSetup = true }
-                .font(.footnote)
+                    statusCard
 
-            Button("Réunions transcrites") { showHistory = true }
-                .font(.footnote)
-
-            Button("Réglages") { showSettings = true }
-                .font(.footnote)
+                    VStack(spacing: 12) {
+                        TimbreMenuRow(
+                            icon: "person.wave.2.fill",
+                            title: "Transcription de réunion",
+                            subtitle: "Enregistrer et distinguer les locuteurs",
+                            action: { showDiarizationSetup = true }
+                        )
+                        TimbreMenuRow(
+                            icon: "clock.arrow.circlepath",
+                            title: "Réunions transcrites",
+                            subtitle: "Historique et export",
+                            action: { showHistory = true }
+                        )
+                        TimbreMenuRow(
+                            icon: "gearshape.fill",
+                            title: "Réglages",
+                            subtitle: "Clé API, vocabulaire, nettoyage",
+                            action: { showSettings = true }
+                        )
+                    }
+                }
+                .padding(20)
+                .padding(.top, 12)
+            }
         }
-        .padding()
+        .preferredColorScheme(.dark)
         .sheet(isPresented: $showSettings) {
             SettingsView()
         }
@@ -43,38 +62,74 @@ struct ContentView: View {
         .onChange(of: router.pendingURL) { _, _ in consumePendingURLIfNeeded() }
     }
 
+    private var header: some View {
+        VStack(spacing: 6) {
+            Text("Timbre")
+                .font(.timbreDisplay(44))
+                .foregroundStyle(Color.timbreTextPrimary)
+            Text("Ce qui distingue deux voix sur la même note")
+                .font(.timbreCaption())
+                .foregroundStyle(Color.timbreTextSecondary)
+        }
+        .padding(.top, 12)
+    }
+
     @ViewBuilder
-    private var statusView: some View {
+    private var statusCard: some View {
+        HStack(spacing: 14) {
+            statusIcon
+            VStack(alignment: .leading, spacing: 3) {
+                Text(statusTitle)
+                    .font(.timbreTitle(16))
+                    .foregroundStyle(Color.timbreTextPrimary)
+                if let statusSubtitle {
+                    Text(statusSubtitle)
+                        .font(.timbreCaption())
+                        .foregroundStyle(Color.timbreTextSecondary)
+                }
+            }
+            Spacer()
+        }
+        .timbreCard()
+    }
+
+    @ViewBuilder
+    private var statusIcon: some View {
         switch controller.state {
         case .idle:
-            Text("Prêt — en attente d'une demande du clavier.")
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-
+            Image(systemName: "keyboard.fill")
+                .foregroundStyle(Color.timbreTextSecondary)
         case .recording:
-            VStack(spacing: 12) {
-                Text("🔴 Enregistrement en cours")
-                Text("Contrôle depuis le clavier — reviens dans ton app.")
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-            }
-
+            Circle()
+                .fill(Color.timbreDanger)
+                .frame(width: 10, height: 10)
         case .transcribing:
-            VStack(spacing: 12) {
-                ProgressView()
-                Text("Transcription en cours…")
-                    .foregroundStyle(.secondary)
-            }
-
+            ProgressView()
+                .tint(Color.timbreViolet)
         case .done:
-            Text("Terminé — reviens dans ton app.")
-                .foregroundStyle(.secondary)
+            Image(systemName: "checkmark.circle.fill")
+                .foregroundStyle(LinearGradient.timbreAccent)
+        case .failed:
+            Image(systemName: "exclamationmark.triangle.fill")
+                .foregroundStyle(Color.timbreDanger)
+        }
+    }
 
-        case .failed(let message):
-            Text(message)
-                .foregroundStyle(.red)
-                .multilineTextAlignment(.center)
+    private var statusTitle: String {
+        switch controller.state {
+        case .idle: "Prêt"
+        case .recording: "Enregistrement en cours"
+        case .transcribing: "Transcription en cours…"
+        case .done: "Terminé"
+        case .failed(let message): message
+        }
+    }
+
+    private var statusSubtitle: String? {
+        switch controller.state {
+        case .idle: "En attente d'une demande du clavier"
+        case .recording, .done: "Contrôle depuis le clavier — reviens dans ton app"
+        case .transcribing, .failed: nil
         }
     }
 
