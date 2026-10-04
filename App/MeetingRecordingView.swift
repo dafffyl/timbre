@@ -9,6 +9,7 @@ struct MeetingRecordingView: View {
     @State private var controller = MeetingRecordingController()
     @State private var recordedURL: URL?
     @State private var showTranscript = false
+    @State private var showInterruptionNotice = false
     @State private var levelHistory: [Float] = []
 
     var body: some View {
@@ -59,6 +60,16 @@ struct MeetingRecordingView: View {
             if levelHistory.count > 32 {
                 levelHistory.removeFirst()
             }
+        }
+        .onChange(of: controller.autoStoppedURL) { _, newURL in
+            guard let newURL else { return }
+            recordedURL = newURL
+            showInterruptionNotice = true
+        }
+        .alert("Enregistrement interrompu", isPresented: $showInterruptionNotice) {
+            Button("OK") { showTranscript = true }
+        } message: {
+            Text("Une coupure audio système (appel, Siri, alarme...) a arrêté l'enregistrement. Transcription de ce qui a été capturé jusque-là.")
         }
     }
 
