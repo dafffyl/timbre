@@ -139,11 +139,12 @@ struct KeyboardView: View {
         case .idle:
             Button(action: onMicTap) {
                 HStack(spacing: 6) {
-                    Text("Start")
+                    Text("Dicter")
                     Image(systemName: "waveform")
                 }
                 .font(.subheadline.weight(.semibold))
-                .foregroundStyle(.white)
+                // Texte sombre sur le dégradé (contraste blanc < 3:1).
+                .foregroundStyle(Color(red: 0.051, green: 0.047, blue: 0.086))
                 .padding(.horizontal, 16)
                 .padding(.vertical, 8)
                 .background(accentGradient)
