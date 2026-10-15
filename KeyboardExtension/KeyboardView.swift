@@ -114,6 +114,9 @@ struct KeyboardView: View {
         // `accentPicker`, quel que soit l'ancêtre commun réel dans l'arbre
         // de vues.
         .coordinateSpace(name: "keyboard")
+        // La hauteur du clavier est fixée par le système : au-delà de ce
+        // palier les lettres débordaient de leurs touches.
+        .dynamicTypeSize(...DynamicTypeSize.xxLarge)
         .preferredColorScheme(.dark)
         .onChange(of: viewModel.state) { _, newState in
             if newState != .recording {
@@ -152,6 +155,8 @@ struct KeyboardView: View {
                 .shadow(color: violet.opacity(0.4), radius: 8, y: 3)
             }
             .buttonStyle(.plain)
+            .accessibilityLabel("Dicter")
+            .accessibilityHint("Lance la dictée vocale dans l'app Timbre")
 
         case .fullAccessRequired:
             Text("Autorise l'accès complet dans Réglages")
@@ -170,11 +175,16 @@ struct KeyboardView: View {
 
                 Button(action: onCancelTap) {
                     Image(systemName: "xmark.circle.fill")
+                        .frame(minWidth: 44, minHeight: 44)
                 }
+                .accessibilityLabel("Annuler la dictée")
                 Button(action: onStopRecordingTap) {
                     Image(systemName: "checkmark.circle.fill")
+                        .frame(minWidth: 44, minHeight: 44)
                 }
+                .accessibilityLabel("Terminer la dictée")
             }
+            .accessibilityElement(children: .contain)
             .font(.title3)
             .foregroundStyle(.white)
             .padding(.horizontal, 12)
@@ -220,6 +230,7 @@ struct KeyboardView: View {
             }
         }
         .frame(width: CGFloat(waveformBarCount) * 6, height: 24)
+        .accessibilityHidden(true)
     }
 
     private func barHeight(for level: Float) -> CGFloat {
@@ -257,6 +268,18 @@ struct KeyboardView: View {
             .clipShape(RoundedRectangle(cornerRadius: 8))
             .contentShape(Rectangle())
             .gesture(letterGesture(for: key))
+            // Le `DragGesture` n'est pas activable par VoiceOver : on expose
+            // la touche comme un élément clavier avec une action par défaut,
+            // et les variantes accentuées comme actions personnalisées.
+            .accessibilityElement()
+            .accessibilityLabel(isUppercase ? key.uppercased() : key.lowercased())
+            .accessibilityAddTraits([.isKeyboardKey, .isButton])
+            .accessibilityAction(.default) { tapLetter(key) }
+            .accessibilityActions {
+                ForEach(DiacriticVariants.variants(for: key), id: \.self) { variant in
+                    Button(variant) { insertLetterOrVariant(base: key, selected: variant) }
+                }
+            }
     }
 
     private func letterGesture(for key: String) -> some Gesture {
@@ -339,6 +362,8 @@ struct KeyboardView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 8))
         }
         .buttonStyle(.plain)
+        .accessibilityLabel(key)
+        .accessibilityAddTraits(.isKeyboardKey)
     }
 
     /// Barre de variantes accentuées affichée en overlay pendant l'appui
@@ -381,6 +406,7 @@ struct KeyboardView: View {
         .clipShape(RoundedRectangle(cornerRadius: 12))
         .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(Color.white.opacity(0.1), lineWidth: 1))
         .shadow(color: .black.opacity(0.4), radius: 12, y: 6)
+        .accessibilityHidden(true)
     }
 
     private var shiftKey: some View {
@@ -395,6 +421,9 @@ struct KeyboardView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 8))
         }
         .buttonStyle(.plain)
+        .accessibilityLabel("Majuscule")
+        .accessibilityValue(shiftState == .locked ? "Verrouillée" : (shiftState == .shifted ? "Activée" : "Désactivée"))
+        .accessibilityAddTraits(.isKeyboardKey)
     }
 
     /// Distincte de `modifierKey` : les autres touches modificatrices
@@ -414,9 +443,16 @@ struct KeyboardView: View {
                     .onChanged { _ in startDeleteRepeatIfNeeded() }
                     .onEnded { _ in stopDeleteRepeat() }
             )
+            .accessibilityElement()
+            .accessibilityLabel("Supprimer")
+            .accessibilityAddTraits([.isKeyboardKey, .isButton])
+            .accessibilityAction(.default) {
+                onHapticTap()
+                onDeleteTap()
+            }
     }
 
-    private func modifierKey(systemImage: String, action: @escaping () -> Void) -> some View {
+    private func modifierKey(systemImage: String, label: String, action: @escaping () -> Void) -> some View {
         Button {
             onHapticTap()
             action()
@@ -429,6 +465,8 @@ struct KeyboardView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 8))
         }
         .buttonStyle(.plain)
+        .accessibilityLabel(label)
+        .accessibilityAddTraits(.isKeyboardKey)
     }
 
     private var bottomRow: some View {
@@ -445,6 +483,8 @@ struct KeyboardView: View {
                     .clipShape(RoundedRectangle(cornerRadius: 8))
             }
             .buttonStyle(.plain)
+            .accessibilityLabel(isNumericPage ? "Lettres" : "Chiffres et symboles")
+            .accessibilityAddTraits(.isKeyboardKey)
 
             Button {
                 onHapticTap()
@@ -458,8 +498,10 @@ struct KeyboardView: View {
                     .clipShape(RoundedRectangle(cornerRadius: 8))
             }
             .buttonStyle(.plain)
+            .accessibilityLabel("Espace")
+            .accessibilityAddTraits(.isKeyboardKey)
 
-            modifierKey(systemImage: "arrow.turn.down.left") {
+            modifierKey(systemImage: "arrow.turn.down.left", label: "Retour à la ligne") {
                 onKeyTap("\n")
             }
             .frame(width: 60)
