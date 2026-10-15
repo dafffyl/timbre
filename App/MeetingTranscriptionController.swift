@@ -88,6 +88,7 @@ final class MeetingTranscriptionController {
         )
         let plans = AudioChunker.plan(totalDuration: duration, maxChunkDuration: maxChunkDuration, overlap: 10)
 
+        let language = DictationPreferences.languageCode
         var chunks: [TranscribedChunk] = []
         var hadMissingChunks = false
         for (index, plan) in plans.enumerated() {
@@ -98,7 +99,7 @@ final class MeetingTranscriptionController {
 
                 let data = try Data(contentsOf: chunkURL)
                 let result = try await transcriptionProvider.transcribe(
-                    TranscriptionRequest(audio: data, format: .m4a, language: "fr")
+                    TranscriptionRequest(audio: data, format: .m4a, language: language)
                 )
                 chunks.append(TranscribedChunk(plan: plan, words: result.words))
             } catch TranscriptionError.missingAPIKey {

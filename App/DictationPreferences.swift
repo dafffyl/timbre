@@ -14,6 +14,34 @@ import Foundation
 enum DictationPreferences {
     private static let vocabularyKey = "fr.dafffyl.timbre.vocabularyPrompt"
     private static let cleanupEnabledKey = "fr.dafffyl.timbre.cleanupEnabled"
+    private static let languageKey = "fr.dafffyl.timbre.transcriptionLanguage"
+
+    /// Langues proposées dans les réglages — codes ISO-639-1 acceptés par
+    /// Whisper. `auto` laisse Whisper détecter la langue (aucun paramètre
+    /// `language` envoyé).
+    static let supportedLanguages: [(code: String, name: String)] = [
+        ("fr", "Français"),
+        ("en", "English"),
+        ("es", "Español"),
+        ("de", "Deutsch"),
+        ("it", "Italiano"),
+        ("pt", "Português"),
+        ("nl", "Nederlands"),
+        ("auto", "Détection automatique"),
+    ]
+
+    /// Français par défaut : comportement historique de l'app.
+    static var language: String {
+        get { UserDefaults.standard.string(forKey: languageKey) ?? "fr" }
+        set { UserDefaults.standard.set(newValue, forKey: languageKey) }
+    }
+
+    /// Valeur à passer à `TranscriptionRequest.language` : `nil` pour la
+    /// détection automatique.
+    static var languageCode: String? {
+        let value = language
+        return value == "auto" ? nil : value
+    }
 
     /// Vocabulaire personnalisé de l'utilisateur (noms propres, jargon
     /// technique) — transmis comme `prompt` à Whisper pour améliorer la
