@@ -4,11 +4,14 @@
 //
 
 import SwiftUI
+import TimbreSecurity
 
 struct ContentView: View {
     @State private var showSettings = false
     @State private var showDiarizationSetup = false
     @State private var showHistory = false
+    @State private var progress = ContentView.currentProgress()
+    @Environment(\.scenePhase) private var scenePhase
 
     private let controller = DictationController.shared
     private let router = LaunchURLRouter.shared
@@ -21,7 +24,23 @@ struct ContentView: View {
                 VStack(spacing: 28) {
                     header
 
-                    statusCard
+                    if progress.isComplete {
+                        statusCard
+                    } else {
+                        OnboardingChecklistCard(
+                            progress: progress,
+                            openSettings: {
+                                if let url = URL(string: UIApplication.openSettingsURLString) {
+                                    UIApplication.shared.open(url)
+                                }
+                            },
+                            openAPIKeySettings: { showSettings = true },
+                            confirmFullAccess: {
+                                OnboardingPreferences.fullAccessConfirmed = true
+                                refreshProgress()
+                            }
+                        )
+                    }
 
                     VStack(spacing: 12) {
                         TimbreMenuRow(
@@ -58,7 +77,20 @@ struct ContentView: View {
         .sheet(isPresented: $showHistory) {
             MeetingHistoryView()
         }
-        .onAppear { consumePendingURLIfNeeded() }
+        .onAppear {
+            refreshProgress()
+            consumePendingURLIfNeeded()
+        }
+        // Retour de Réglages iOS (clavier activé) ou de la feuille Réglages
+        // (clé enregistrée) : on recalcule la checklist.
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active { refreshProgress() }
+        }
+        .onChange(of: showSettings) { _, _ in refreshProgress() }
+        .onChange(of: controller.state) { _, state in
+            if case .done = state { OnboardingPreferences.firstDictationDone = true }
+            refreshProgress()
+        }
         .onChange(of: router.pendingURL) { _, _ in consumePendingURLIfNeeded() }
     }
 
@@ -131,6 +163,22 @@ struct ContentView: View {
         case .recording, .done: "Contrôle depuis le clavier — reviens dans ton app"
         case .transcribing, .failed: nil
         }
+    }
+
+    private func refreshProgress() {
+        progress = Self.currentProgress()
+    }
+
+    private static func currentProgress() -> OnboardingProgress {
+        // `try?` volontaire : une erreur Keychain se traite comme « pas de
+        // clé » pour la checklist, l'écran Réglages affichera le détail.
+        let hasKey = ((try? APIKeyStore().load()) ?? nil)?.isEmpty == false
+        return OnboardingProgress(
+            hasAPIKey: hasKey,
+            keyboardEnabled: OnboardingPreferences.isKeyboardEnabled(),
+            fullAccessConfirmed: OnboardingPreferences.fullAccessConfirmed,
+            firstDictationDone: OnboardingPreferences.firstDictationDone
+        )
     }
 
     private func consumePendingURLIfNeeded() {
