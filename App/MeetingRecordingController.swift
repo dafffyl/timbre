@@ -30,6 +30,8 @@ final class MeetingRecordingController {
     /// l'observe pour basculer automatiquement vers la transcription du
     /// fichier déjà enregistré plutôt que de perdre la réunion.
     private(set) var autoStoppedURL: URL?
+    /// Raison affichée à l'utilisateur quand `autoStoppedURL` est renseigné.
+    private(set) var autoStopMessage = ""
 
     /// 4h, pas 180s comme la dictée (`DictationController`) : le risque à
     /// couvrir ici n'est pas une dictée qui déraille mais un oubli d'arrêter
@@ -63,6 +65,7 @@ final class MeetingRecordingController {
 
     private func handleUnrecoverableInterruption() {
         guard state == .recording else { return }
+        autoStopMessage = "Une coupure audio système (appel, Siri, alarme...) a arrêté l'enregistrement. Transcription de ce qui a été capturé jusque-là."
         autoStoppedURL = stop()
     }
 
@@ -94,7 +97,10 @@ final class MeetingRecordingController {
         elapsed = Date().timeIntervalSince(startedAt)
         audioLevel = recorder.currentLevel
         if elapsed > Self.maxRecordingDuration {
-            _ = stop()
+            // Même chemin qu'une interruption : la vue bascule vers la
+            // transcription du fichier plutôt que de le jeter en silence.
+            autoStopMessage = "La durée maximale de 4 h est atteinte : l'enregistrement s'est arrêté. Transcription de ce qui a été capturé."
+            autoStoppedURL = stop()
         }
     }
 

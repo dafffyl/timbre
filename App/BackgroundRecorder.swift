@@ -49,6 +49,7 @@ final class BackgroundRecorder: @unchecked Sendable {
     private let audioFileBox = OSAllocatedUnfairLock<AVAudioFile?>(initialState: nil)
     private let level = OSAllocatedUnfairLock<Float>(initialState: 0)
     private var interruptionObserver: NSObjectProtocol?
+    private var configurationObserver: NSObjectProtocol?
 
     /// Niveau audio courant, normalisé 0...1. Sûr à lire depuis n'importe
     /// quel thread.
@@ -60,12 +61,43 @@ final class BackgroundRecorder: @unchecked Sendable {
     /// tap. Point d'entrée unique — `resumeRecording()` ne repasse jamais
     /// par ici, elle réutilise le moteur déjà lancé.
     func start() throws {
+        // Déjà démarré (course entre l'ouverture par URL et la reprise par
+        // notification pendant la fenêtre de grâce) : installer un second tap
+        // sur le même bus fait planter AVAudioEngine. On se contente de
+        // rouvrir un fichier, comme `resumeRecording()`.
+        if isEngineRunning {
+            try openNewFile()
+            return
+        }
+
         let session = AVAudioSession.sharedInstance()
         try session.setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker])
         try session.setActive(true)
 
-        let inputNode = engine.inputNode
-        let inputFormat = inputNode.outputFormat(forBus: 0)
+        do {
+            try configureConverter()
+            try openNewFile()
+            installTap()
+            engine.prepare()
+            try engine.start()
+        } catch {
+            // Échec partiel : sans nettoyage, un tap resterait installé et le
+            // prochain `start()` planterait en en installant un second.
+            engine.inputNode.removeTap(onBus: 0)
+            engine.stop()
+            audioFileBox.withLock { $0 = nil }
+            recordedURL = nil
+            throw error
+        }
+        isEngineRunning = true
+        observeInterruptions()
+    }
+
+    /// (Re)construit le convertisseur depuis le format d'entrée courant —
+    /// nécessaire aussi après un changement de route (AirPods, Bluetooth :
+    /// la fréquence d'échantillonnage du micro change).
+    private func configureConverter() throws {
+        let inputFormat = engine.inputNode.outputFormat(forBus: 0)
         // Float32 non-interleaved : c'est le format canonique qu'`AVAudioFile`
         // attend en entrée de `write(from:)` quand le fichier de destination
         // est compressé (AAC) — le convertisseur interne (`ExtAudioFile`) qui
@@ -85,16 +117,14 @@ final class BackgroundRecorder: @unchecked Sendable {
         }
         self.targetFormat = targetFormat
         self.converter = converter
+    }
 
-        try openNewFile()
-
-        inputNode.installTap(onBus: 0, bufferSize: 4_096, format: inputFormat) { [self] buffer, _ in
+    private func installTap() {
+        let inputNode = engine.inputNode
+        inputNode.removeTap(onBus: 0)
+        inputNode.installTap(onBus: 0, bufferSize: 4_096, format: inputNode.outputFormat(forBus: 0)) { [self] buffer, _ in
             process(buffer: buffer)
         }
-        engine.prepare()
-        try engine.start()
-        isEngineRunning = true
-        observeInterruptions()
     }
 
     /// Le système coupe le moteur tout seul dès le début d'une interruption
@@ -106,6 +136,16 @@ final class BackgroundRecorder: @unchecked Sendable {
     /// que l'utilisateur relise le transcript et découvre qu'il s'arrête en
     /// plein milieu.
     private func observeInterruptions() {
+        removeObservers()
+        configurationObserver = NotificationCenter.default.addObserver(
+            forName: .AVAudioEngineConfigurationChange,
+            object: engine,
+            queue: nil
+        ) { [weak self] _ in
+            Task { @MainActor [weak self] in
+                self?.recoverFromConfigurationChange()
+            }
+        }
         interruptionObserver = NotificationCenter.default.addObserver(
             forName: AVAudioSession.interruptionNotification,
             object: AVAudioSession.sharedInstance(),
@@ -124,6 +164,33 @@ final class BackgroundRecorder: @unchecked Sendable {
                 self?.resumeAfterInterruption(shouldResume: shouldResume)
             }
         }
+    }
+
+    /// Changement de route audio (AirPods connectés/déconnectés, Bluetooth) :
+    /// le moteur s'arrête tout seul et le format du micro peut changer. On
+    /// reconstruit le convertisseur et le tap avant de relancer ; sans ça
+    /// l'enregistrement s'arrêtait sans aucun signal.
+    private func recoverFromConfigurationChange() {
+        guard isEngineRunning else { return }
+        do {
+            try configureConverter()
+            installTap()
+            engine.prepare()
+            try engine.start()
+        } catch {
+            onUnrecoverableInterruption?()
+        }
+    }
+
+    private func removeObservers() {
+        if let interruptionObserver {
+            NotificationCenter.default.removeObserver(interruptionObserver)
+        }
+        if let configurationObserver {
+            NotificationCenter.default.removeObserver(configurationObserver)
+        }
+        interruptionObserver = nil
+        configurationObserver = nil
     }
 
     /// `shouldResume == false` : iOS indique explicitement qu'il ne faut pas
@@ -164,10 +231,7 @@ final class BackgroundRecorder: @unchecked Sendable {
     /// Arrêt complet : plus de reprise possible sans repasser par `start()`.
     func stop() {
         isEngineRunning = false
-        if let interruptionObserver {
-            NotificationCenter.default.removeObserver(interruptionObserver)
-        }
-        interruptionObserver = nil
+        removeObservers()
         engine.inputNode.removeTap(onBus: 0)
         engine.stop()
         audioFileBox.withLock { $0 = nil }
