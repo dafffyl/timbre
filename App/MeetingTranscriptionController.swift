@@ -31,12 +31,19 @@ final class MeetingTranscriptionController {
         /// reste visible dans `turns` de toute façon.
         case done(turns: [SpeakerTurn], hadMissingChunks: Bool)
         case failed(String)
+        /// Pipeline interrompu (vue quittée, tâche annulée) : ni échec ni
+        /// résultat — l'appelant doit conserver l'audio.
+        case cancelled
     }
 
     private(set) var state: State = .idle
 
     private let diarizationProvider: any DiarizationProvider
     private let transcriptionProvider: any TranscriptionProvider
+    /// Passe par le coordinateur de provisionnement (ADR-0004) plutôt que de
+    /// laisser `diarize` télécharger ~500 Mo implicitement, sans consentement
+    /// ni vérification du Wi-Fi.
+    private let ensureModelsReady: @Sendable () async -> ModelProvisioningState
 
     /// Bitrate de nos propres enregistrements (`BackgroundRecorder`, 32 kbps)
     /// — pas une estimation : on contrôle nous-mêmes tout l'encodage de bout
@@ -45,12 +52,16 @@ final class MeetingTranscriptionController {
     private let sizeLimitBytes: Int
 
     init(
-        diarizationProvider: any DiarizationProvider = FluidAudioDiarizationProvider(),
+        diarizationProvider: any DiarizationProvider = DiarizationEnvironment.diarizationProvider,
+        ensureModelsReady: @escaping @Sendable () async -> ModelProvisioningState = {
+            await DiarizationEnvironment.provisioningCoordinator.ensureModelsReady()
+        },
         transcriptionProvider: any TranscriptionProvider = GroqProvider(apiKey: { (try? APIKeyStore().load()) ?? nil }),
         bitrateForChunking: Double = 32_000,
         sizeLimitBytes: Int = 25_000_000
     ) {
         self.diarizationProvider = diarizationProvider
+        self.ensureModelsReady = ensureModelsReady
         self.transcriptionProvider = transcriptionProvider
         self.bitrateForChunking = bitrateForChunking
         self.sizeLimitBytes = sizeLimitBytes
@@ -66,6 +77,16 @@ final class MeetingTranscriptionController {
     func run(audioURL: URL) async {
         state = .diarizing
         do {
+            switch await ensureModelsReady() {
+            case .ready:
+                break
+            case .needsConsent, .needsWiFi:
+                state = .failed("Les modèles d'analyse des locuteurs ne sont pas installés — prépare-les dans les réglages (Wi-Fi requis). L'enregistrement est conservé.")
+                return
+            case .failed:
+                state = .failed("Impossible de préparer l'analyse des locuteurs. L'enregistrement est conservé, réessaie.")
+                return
+            }
             async let segmentsTask = diarizationProvider.diarize(audioURL)
             let (words, hadMissingChunks) = try await transcribeAllChunks(audioURL: audioURL)
             let segments = try await segmentsTask
@@ -74,6 +95,10 @@ final class MeetingTranscriptionController {
             let attributed = SpeakerAlignment.align(words: words, segments: segments)
             let turns = TranscriptFormatter.groupIntoTurns(attributed)
             state = .done(turns: turns, hadMissingChunks: hadMissingChunks)
+        } catch is CancellationError {
+            state = .cancelled
+        } catch TranscriptionError.cancelled {
+            state = .cancelled
         } catch {
             state = .failed(Self.userMessage(for: error))
         }
@@ -103,6 +128,13 @@ final class MeetingTranscriptionController {
                 chunks.append(TranscribedChunk(plan: plan, words: result.words))
             } catch TranscriptionError.missingAPIKey {
                 throw TranscriptionError.missingAPIKey
+            } catch is CancellationError {
+                throw CancellationError()
+            } catch TranscriptionError.cancelled {
+                throw TranscriptionError.cancelled
+            } catch TranscriptionError.server(let statusCode, let message) where statusCode == 401 || statusCode == 403 {
+                // Clé refusée : déterministe, chaque chunk échouerait pareil.
+                throw TranscriptionError.server(statusCode: statusCode, message: message)
             } catch {
                 hadMissingChunks = true
                 chunks.append(TranscribedChunk(plan: plan, words: [Self.missingChunkMarker(for: plan)]))
@@ -117,7 +149,11 @@ final class MeetingTranscriptionController {
     /// autre mot : le trou reste visible en clair dans le transcript plutôt
     /// que silencieusement absent.
     private static func missingChunkMarker(for plan: AudioChunkPlan) -> TranscriptionWord {
-        TranscriptionWord(text: "[transcription indisponible]", start: 0, end: plan.end - plan.start)
+        // Au milieu du chunk, pas à 0 : à 0 le marqueur tombe dans la zone de
+        // recouvrement et `TranscriptStitcher` le supprime pour tout chunk
+        // autre que le premier.
+        let middle = (plan.end - plan.start) / 2
+        return TranscriptionWord(text: "[transcription indisponible]", start: middle, end: middle + 0.1)
     }
 
     /// API vérifiée en la faisant tourner réellement (ADR-0005) :
@@ -148,6 +184,8 @@ final class MeetingTranscriptionController {
             return "Problème réseau pendant la transcription."
         case .rateLimited:
             return "Trop de requêtes envoyées à Groq — réessaie dans un instant."
+        case .server(let statusCode, _) where statusCode == 401 || statusCode == 403:
+            return "Clé API Groq refusée (code \(statusCode)) — vérifie-la dans les réglages."
         default:
             return "Erreur pendant la transcription de la réunion."
         }
