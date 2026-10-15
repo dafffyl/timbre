@@ -13,6 +13,11 @@ import TimbreDiarization
 /// l'écran de réglage — et pour que la future fonctionnalité réunion
 /// réutilise ce même provider déjà préparé plutôt que d'en recréer un.
 enum DiarizationEnvironment {
+    /// Instance unique, partagée par le provisionnement et le pipeline de
+    /// réunion : en créer une seconde rechargerait les modèles (~23 s) et
+    /// doublerait leur empreinte mémoire.
+    nonisolated static let diarizationProvider = FluidAudioDiarizationProvider()
+
     /// `nonisolated` : sans ça, l'isolation MainActor par défaut du module
     /// (voir `CLAUDE.md`) s'applique à cette propriété alors qu'elle n'en a
     /// pas besoin — c'est un `let` immuable qui contient un `actor`
@@ -20,7 +25,7 @@ enum DiarizationEnvironment {
     /// quel contexte, y compris la valeur par défaut d'un paramètre
     /// (`DiarizationSetupViewModel.init`), qui n'est pas garantie MainActor.
     nonisolated static let provisioningCoordinator = ModelProvisioningCoordinator(
-        provider: FluidAudioDiarizationProvider(),
+        provider: diarizationProvider,
         networkStatus: NWPathNetworkStatusProvider(),
         stateStore: ModelProvisioningPreferences()
     )

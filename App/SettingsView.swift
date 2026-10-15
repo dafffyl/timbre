@@ -8,6 +8,7 @@ struct SettingsView: View {
     @State private var cleanupEnabled = false
     @State private var savedConfirmation = false
     @State private var language = DictationPreferences.language
+    @State private var saveFailed = false
 
     private let store = APIKeyStore()
 
@@ -19,8 +20,12 @@ struct SettingsView: View {
                 Form {
                     Section {
                         SecureField("Clé API Groq", text: $apiKey)
-                            .textContentType(.password)
+                            // Pas de `.textContentType(.password)` : iOS
+                            // proposerait d'enregistrer la clé dans le
+                            // Trousseau iCloud, contraire à l'invariant
+                            // « clé Groq locale uniquement » (CLAUDE.md).
                             .autocorrectionDisabled()
+                            .textInputAutocapitalization(.never)
                     } header: {
                         Text("Groq")
                     } footer: {
@@ -58,6 +63,12 @@ struct SettingsView: View {
                         Text("Retire les hésitations et corrige la ponctuation via un second appel IA, après la transcription. Expérimental : désactivé par défaut.")
                     }
                     .listRowBackground(Color.timbreSurface.opacity(0.55))
+
+                    if saveFailed {
+                        Label("Impossible d'enregistrer la clé dans le Trousseau.", systemImage: "exclamationmark.triangle.fill")
+                            .foregroundStyle(Color.timbreDanger)
+                            .listRowBackground(Color.clear)
+                    }
 
                     if savedConfirmation {
                         HStack(spacing: 8) {
@@ -110,6 +121,7 @@ struct SettingsView: View {
         // Le vocabulaire (potentiellement vidé volontairement) se sauvegarde
         // toujours ; la clé API, elle, ne s'écrase jamais avec une valeur
         // vide pour éviter d'effacer une clé déjà enregistrée par erreur.
+        saveFailed = false
         guard !apiKey.isEmpty else {
             savedConfirmation = true
             return
@@ -119,6 +131,7 @@ struct SettingsView: View {
             savedConfirmation = true
         } catch {
             savedConfirmation = false
+            saveFailed = true
         }
     }
 }

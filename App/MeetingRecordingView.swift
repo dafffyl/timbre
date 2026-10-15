@@ -10,6 +10,7 @@ struct MeetingRecordingView: View {
     @State private var recordedURL: URL?
     @State private var showTranscript = false
     @State private var showInterruptionNotice = false
+    @State private var showStopConfirmation = false
     @State private var levelHistory: [Float] = []
 
     var body: some View {
@@ -50,6 +51,14 @@ struct MeetingRecordingView: View {
         .preferredColorScheme(.dark)
         .navigationTitle("Enregistrement")
         .navigationBarTitleDisplayMode(.inline)
+        // Retour/swipe pendant l'enregistrement perdait la réunion et
+        // laissait le micro actif : on le bloque, l'arrêt passe par le bouton.
+        .navigationBarBackButtonHidden(controller.state == .recording)
+        .interactiveDismissDisabled(controller.state == .recording)
+        .confirmationDialog("Terminer l'enregistrement ?", isPresented: $showStopConfirmation, titleVisibility: .visible) {
+            Button("Terminer et transcrire", role: .destructive) { finishRecording() }
+            Button("Continuer l'enregistrement", role: .cancel) {}
+        }
         .navigationDestination(isPresented: $showTranscript) {
             if let recordedURL {
                 MeetingTranscriptView(audioURL: recordedURL)
@@ -69,8 +78,13 @@ struct MeetingRecordingView: View {
         .alert("Enregistrement interrompu", isPresented: $showInterruptionNotice) {
             Button("OK") { showTranscript = true }
         } message: {
-            Text("Une coupure audio système (appel, Siri, alarme...) a arrêté l'enregistrement. Transcription de ce qui a été capturé jusque-là.")
+            Text(controller.autoStopMessage)
         }
+    }
+
+    private func finishRecording() {
+        recordedURL = controller.stop()
+        showTranscript = recordedURL != nil
     }
 
     private var formattedElapsed: String {
@@ -84,8 +98,12 @@ struct MeetingRecordingView: View {
             case .idle, .failed:
                 Task { await controller.start() }
             case .recording:
-                recordedURL = controller.stop()
-                showTranscript = recordedURL != nil
+                // Un tap accidentel ne doit pas clore une longue réunion.
+                if controller.elapsed > 30 {
+                    showStopConfirmation = true
+                } else {
+                    finishRecording()
+                }
             }
         } label: {
             ZStack {

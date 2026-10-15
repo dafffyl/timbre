@@ -19,6 +19,16 @@ struct MeetingTranscriptView: View {
     @State private var controller = MeetingTranscriptionController()
     @State private var savedRecord: MeetingRecord?
     @State private var hadMissingChunks = false
+    /// Incrémenté par « Réessayer » : relance `.task(id:)` sur le même
+    /// fichier audio, conservé tant que le transcript n'est pas sauvegardé.
+    @State private var attempt = 0
+
+    private var isProcessing: Bool {
+        switch controller.state {
+        case .idle, .diarizing, .transcribing, .aligning: true
+        case .done, .failed, .cancelled: false
+        }
+    }
 
     var body: some View {
         ZStack {
@@ -34,6 +44,9 @@ struct MeetingTranscriptView: View {
             case .aligning:
                 progress("Assemblage du transcript…")
 
+            case .cancelled:
+                progress("Reprise de la transcription…")
+
             case .failed(let message):
                 VStack(spacing: 14) {
                     ZStack {
@@ -48,6 +61,9 @@ struct MeetingTranscriptView: View {
                         .font(.timbreBody(15))
                         .foregroundStyle(Color.timbreTextSecondary)
                         .multilineTextAlignment(.center)
+                    Button("Réessayer") { attempt += 1 }
+                        .buttonStyle(.borderedProminent)
+                        .tint(Color.timbreViolet)
                 }
                 .padding(24)
 
@@ -78,13 +94,16 @@ struct MeetingTranscriptView: View {
         .preferredColorScheme(.dark)
         .navigationTitle("Transcript")
         .navigationBarTitleDisplayMode(.inline)
-        .task {
+        // Quitter pendant le traitement annulait le pipeline et perdait la
+        // réunion : on bloque le retour tant que ça tourne.
+        .navigationBarBackButtonHidden(isProcessing)
+        .interactiveDismissDisabled(isProcessing)
+        .task(id: attempt) {
             await controller.run(audioURL: audioURL)
-            // Le fichier audio n'est plus utile une fois le pipeline terminé
-            // (succès ou échec) — seul le texte du transcript est conservé
-            // (voir MeetingRecord), jamais l'audio (ADR-0005).
-            try? FileManager.default.removeItem(at: audioURL)
 
+            // L'audio n'est supprimé qu'une fois le transcript sauvegardé :
+            // en cas d'échec ou d'annulation il est conservé pour permettre
+            // un réessai (seul le texte est persisté durablement, ADR-0005).
             if case .done(let turns, let missingChunks) = controller.state {
                 let record = MeetingRecord(turns: turns)
                 if !turns.isEmpty {
@@ -92,6 +111,7 @@ struct MeetingTranscriptView: View {
                 }
                 hadMissingChunks = missingChunks
                 savedRecord = record
+                try? FileManager.default.removeItem(at: audioURL)
             }
         }
     }
