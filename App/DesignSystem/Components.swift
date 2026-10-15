@@ -66,7 +66,9 @@ struct TimbrePrimaryButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.timbreLabel(17))
-            .foregroundStyle(.white)
+            // Texte sombre : le blanc sur le dégradé violet→corail tombait à
+            // 2,15:1–2,98:1 (WCAG AA exige 4,5:1 à cette taille).
+            .foregroundStyle(Color.timbreBackgroundTop)
             .padding(.vertical, 16)
             .frame(maxWidth: .infinity)
             .background(
