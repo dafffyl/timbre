@@ -50,7 +50,8 @@ Timbre/
 │   ├── TimbreCore/         Modèles de domaine, DTO, protocoles. Zéro I/O.
 │   ├── TimbreTranscription/  Abstraction provider + implémentations.
 │   ├── TimbreAudio/        Capture, VAD, encodage, chunking.
-│   ├── TimbreDiarization/  Wrapper FluidAudio + algo d'alignement. Zéro I/O.
+│   ├── TimbreDiarization/  Algo d'alignement (zéro I/O) + wrapper FluidAudio
+│   │                       (réseau au 1er usage, ~500 Mo — voir ADR-0004).
 │   ├── TimbreSecurity/     Keychain, App Group, redaction des logs.
 │   └── TimbreUI/           Composants SwiftUI communs. PAS dans le clavier.
 ```
@@ -90,8 +91,10 @@ absolus en cache).
   typées, jamais de `try?` silencieux. `@unchecked Sendable` interdit sans
   commentaire justifiant l'invariant. DI par protocole partout où il y a
   réseau/disque/horloge.
-- **Tests** : Swift Testing (`@Test`, `#expect`), pas XCTest. `TimbreCore` et
-  `TimbreDiarization` sont zéro-I/O : testables sur fixtures JSON pures.
+- **Tests** : Swift Testing (`@Test`, `#expect`), pas XCTest. `TimbreCore`
+  est zéro-I/O ; dans `TimbreDiarization`, seul l'algo d'alignement l'est
+  (testable sur fixtures JSON pures) — le wrapper FluidAudio fait du vrai
+  I/O et n'est jamais exercé automatiquement en CI (voir ADR-0004).
 
 ## Invariants à ne jamais casser
 

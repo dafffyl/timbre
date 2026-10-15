@@ -34,8 +34,21 @@ final class BackgroundRecorder: @unchecked Sendable {
     private(set) var recordedURL: URL?
     private(set) var isEngineRunning = false
 
+    /// Appelé quand une coupure système (appel, Siri, alarme...) a arrêté le
+    /// moteur et qu'iOS n'autorise pas une reprise automatique
+    /// (`shouldResume` absent), ou que la reprise elle-même échoue. Sans ça,
+    /// l'enregistrement s'arrête silencieusement en plein milieu — le
+    /// chronomètre de l'UI continue puisqu'il ne dépend que de l'horloge, pas
+    /// du flux audio réel (voir `tick()` dans les contrôleurs), donc rien ne
+    /// le signale avant la fin. Sur une dictée de quelques secondes le risque
+    /// est quasi nul ; sur une réunion de 50 minutes il devient élevé — c'est
+    /// le bug réel derrière un enregistrement de réunion qui s'arrête après
+    /// seulement quelques échanges.
+    var onUnrecoverableInterruption: (() -> Void)?
+
     private let audioFileBox = OSAllocatedUnfairLock<AVAudioFile?>(initialState: nil)
     private let level = OSAllocatedUnfairLock<Float>(initialState: 0)
+    private var interruptionObserver: NSObjectProtocol?
 
     /// Niveau audio courant, normalisé 0...1. Sûr à lire depuis n'importe
     /// quel thread.
@@ -81,6 +94,56 @@ final class BackgroundRecorder: @unchecked Sendable {
         engine.prepare()
         try engine.start()
         isEngineRunning = true
+        observeInterruptions()
+    }
+
+    /// Le système coupe le moteur tout seul dès le début d'une interruption
+    /// (appel entrant, Siri, alarme, une autre app qui prend la main sur
+    /// l'audio) — `engine.isRunning` passe à `false` sans qu'on fasse rien.
+    /// Sans relancer explicitement à la fin, l'enregistrement reste
+    /// silencieusement arrêté : rien ne le signale, le chronomètre de l'UI
+    /// continue (il ne lit que l'horloge), donc ça passe inaperçu jusqu'à ce
+    /// que l'utilisateur relise le transcript et découvre qu'il s'arrête en
+    /// plein milieu.
+    private func observeInterruptions() {
+        interruptionObserver = NotificationCenter.default.addObserver(
+            forName: AVAudioSession.interruptionNotification,
+            object: AVAudioSession.sharedInstance(),
+            queue: nil
+        ) { [weak self] notification in
+            guard
+                let info = notification.userInfo,
+                let typeValue = info[AVAudioSessionInterruptionTypeKey] as? UInt,
+                AVAudioSession.InterruptionType(rawValue: typeValue) == .ended
+            else { return }
+
+            let optionsValue = info[AVAudioSessionInterruptionOptionKey] as? UInt ?? 0
+            let shouldResume = AVAudioSession.InterruptionOptions(rawValue: optionsValue).contains(.shouldResume)
+
+            Task { @MainActor [weak self] in
+                self?.resumeAfterInterruption(shouldResume: shouldResume)
+            }
+        }
+    }
+
+    /// `shouldResume == false` : iOS indique explicitement qu'il ne faut pas
+    /// relancer (une autre app garde la main sur l'audio) — rare en pratique
+    /// comparé au cas d'un appel qui se termine, mais on ne peut rien faire
+    /// de mieux ici que prévenir l'appelant ; le fichier déjà enregistré
+    /// reste récupérable via `recordedURL`, à l'appelant de décider (arrêt +
+    /// transcription de ce qui existe plutôt que de tout perdre).
+    private func resumeAfterInterruption(shouldResume: Bool) {
+        guard isEngineRunning else { return }
+        guard shouldResume else {
+            onUnrecoverableInterruption?()
+            return
+        }
+        do {
+            try AVAudioSession.sharedInstance().setActive(true)
+            try engine.start()
+        } catch {
+            onUnrecoverableInterruption?()
+        }
     }
 
     /// Reprise "à chaud" pendant la fenêtre de grâce (voir
@@ -101,6 +164,10 @@ final class BackgroundRecorder: @unchecked Sendable {
     /// Arrêt complet : plus de reprise possible sans repasser par `start()`.
     func stop() {
         isEngineRunning = false
+        if let interruptionObserver {
+            NotificationCenter.default.removeObserver(interruptionObserver)
+        }
+        interruptionObserver = nil
         engine.inputNode.removeTap(onBus: 0)
         engine.stop()
         audioFileBox.withLock { $0 = nil }
