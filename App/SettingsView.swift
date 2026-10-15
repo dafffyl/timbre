@@ -7,6 +7,7 @@ struct SettingsView: View {
     @State private var vocabulary: String = ""
     @State private var cleanupEnabled = false
     @State private var savedConfirmation = false
+    @State private var language = DictationPreferences.language
     @State private var saveFailed = false
 
     private let store = APIKeyStore()
@@ -29,6 +30,19 @@ struct SettingsView: View {
                         Text("Groq")
                     } footer: {
                         Text("Stockée dans le Trousseau, jamais dans les réglages de l'app ni dans les journaux.")
+                    }
+                    .listRowBackground(Color.timbreSurface.opacity(0.55))
+
+                    Section {
+                        Picker("Langue", selection: $language) {
+                            ForEach(DictationPreferences.supportedLanguages, id: \.code) { entry in
+                                Text(entry.name).tag(entry.code)
+                            }
+                        }
+                    } header: {
+                        Text("Langue de transcription")
+                    } footer: {
+                        Text("S'applique aux dictées et aux réunions. La détection automatique est moins fiable sur les phrases courtes.")
                     }
                     .listRowBackground(Color.timbreSurface.opacity(0.55))
 
@@ -96,11 +110,13 @@ struct SettingsView: View {
         }
         vocabulary = DictationPreferences.vocabularyPrompt
         cleanupEnabled = DictationPreferences.cleanupEnabled
+        language = DictationPreferences.language
     }
 
     private func save() {
         DictationPreferences.vocabularyPrompt = vocabulary
         DictationPreferences.cleanupEnabled = cleanupEnabled
+        DictationPreferences.language = language
 
         // Le vocabulaire (potentiellement vidé volontairement) se sauvegarde
         // toujours ; la clé API, elle, ne s'écrase jamais avec une valeur

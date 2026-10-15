@@ -201,7 +201,7 @@ final class DictationController {
                     TranscriptionRequest(
                         audio: audioData,
                         format: .m4a,
-                        language: "fr",
+                        language: DictationPreferences.languageCode,
                         prompt: vocabulary.isEmpty ? nil : vocabulary
                     )
                 )
@@ -239,7 +239,7 @@ final class DictationController {
 
         let cleanupProvider = GroqTextCleanupProvider(apiKey: { (try? apiKeyStore.load()) ?? nil })
         do {
-            let cleaned = try await cleanupProvider.cleanUp(TextCleanupRequest(text: rawText, language: "fr"))
+            let cleaned = try await cleanupProvider.cleanUp(TextCleanupRequest(text: rawText, language: DictationPreferences.languageCode))
             return cleaned.text
         } catch {
             return rawText
