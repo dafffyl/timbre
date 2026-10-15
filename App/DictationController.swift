@@ -296,7 +296,7 @@ final class DictationController {
                 let suffix = detail.map { " : \($0)" } ?? ""
                 return "Clé API Groq refusée (code \(statusCode))\(suffix) — vérifie-la sur console.groq.com."
             }
-            if let detail, !detail.isEmpty {
+            if let detail {
                 return "Erreur Groq (code \(statusCode)) : \(detail)"
             }
             return "Erreur Groq (code \(statusCode))."
@@ -314,12 +314,18 @@ final class DictationController {
     /// sur le texte brut tel quel plutôt que de perdre l'information.
     private static func humanReadableDetail(from rawMessage: String?) -> String? {
         guard let rawMessage else { return nil }
-        guard let data = rawMessage.data(using: .utf8),
+        let text: String
+        if let data = rawMessage.data(using: .utf8),
             let decoded = try? JSONDecoder().decode(GroqErrorBody.self, from: data)
-        else {
-            return rawMessage
+        {
+            text = decoded.error.message
+        } else {
+            text = rawMessage
         }
-        return decoded.error.message
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return nil }
+        // Un corps HTML (proxy, CDN) peut être très long : on borne l'affichage.
+        return trimmed.count > 200 ? String(trimmed.prefix(200)) + "…" : trimmed
     }
 
     private struct GroqErrorBody: Decodable {
