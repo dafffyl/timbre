@@ -131,6 +131,19 @@ struct KeyboardView: View {
 
     private var topBar: some View {
         HStack {
+            if viewModel.state == .idle, let last = viewModel.lastResult, !last.isEmpty {
+                Button {
+                    onHapticTap()
+                    onKeyTap(last)
+                } label: {
+                    Image(systemName: "arrow.uturn.backward.circle")
+                        .font(.title3)
+                        .foregroundStyle(.white.opacity(0.85))
+                        .frame(minWidth: 44, minHeight: 36)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Insérer la dernière dictée")
+            }
             Spacer()
             micButton
         }

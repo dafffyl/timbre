@@ -32,7 +32,7 @@ final class DictationController {
 
     /// Filet de sécurité : au-delà, l'app termine et transcrit d'elle-même,
     /// même sans signal du clavier.
-    private static let maxRecordingDuration: TimeInterval = 180
+    private static let maxRecordingDuration: TimeInterval = 300
 
     /// Durée pendant laquelle le moteur reste actif après une dictée, pour
     /// permettre une reprise immédiate sans bascule visible si la suivante
@@ -217,23 +217,17 @@ final class DictationController {
         Task { @MainActor in
             do {
                 let audioData = try Data(contentsOf: url)
+                let finalText: String
+                do {
+                    finalText = try await Self.transcribe(audioData: audioData)
+                } catch {
+                    // Audio conservé pour un réessai depuis l'historique ;
+                    // sans lui, un échec réseau perdait la dictée.
+                    PendingDictationStore.keep(audioAt: url)
+                    throw error
+                }
                 try? FileManager.default.removeItem(at: url)
-
-                let apiKeyStore = APIKeyStore()
-                let provider = GroqProvider(apiKey: { (try? apiKeyStore.load()) ?? nil })
-                let vocabulary = DictationPreferences.vocabularyPrompt
-                let result = try await provider.transcribe(
-                    TranscriptionRequest(
-                        audio: audioData,
-                        format: .m4a,
-                        language: DictationPreferences.languageCode,
-                        prompt: vocabulary.isEmpty ? nil : vocabulary
-                    )
-                )
-                let finalText = await Self.cleanedUpText(
-                    for: result.text,
-                    apiKeyStore: apiKeyStore
-                )
+                recordResult(finalText)
 
                 guard var ready = channel.read(), ready.id == requestID else { return }
                 ready.status = .ready
@@ -245,6 +239,46 @@ final class DictationController {
                 markFailed(requestID: requestID, message: Self.userMessage(for: error))
             }
         }
+    }
+
+    /// Transcription (+ nettoyage optionnel) d'un enregistrement — partagée
+    /// par la dictée normale et le réessai depuis l'historique.
+    private static func transcribe(audioData: Data) async throws -> String {
+        let apiKeyStore = APIKeyStore()
+        let provider = GroqProvider(apiKey: { (try? apiKeyStore.load()) ?? nil })
+        let vocabulary = DictationPreferences.vocabularyPrompt
+        let result = try await provider.transcribe(
+            TranscriptionRequest(
+                audio: audioData,
+                format: .m4a,
+                language: DictationPreferences.languageCode,
+                prompt: vocabulary.isEmpty ? nil : vocabulary
+            )
+        )
+        return await cleanedUpText(for: result.text, apiKeyStore: apiKeyStore)
+    }
+
+    /// Historique local + « dernière dictée » pour le clavier, si activés.
+    private func recordResult(_ text: String) {
+        guard DictationPreferences.keepHistory, !text.isEmpty else { return }
+        DictationHistoryStore().add(DictationRecord(text: text))
+        channel.saveLastResult(text)
+    }
+
+    /// Réessai manuel d'une dictée échouée (depuis l'historique). Le texte
+    /// ne peut plus être inséré automatiquement dans le champ d'origine : il
+    /// atterrit dans l'historique, à copier. Lève l'erreur pour que la vue
+    /// affiche `userMessage`.
+    func retry(_ pending: PendingDictation) async throws -> String {
+        let data = try Data(contentsOf: pending.url)
+        let text = try await Self.transcribe(audioData: data)
+        PendingDictationStore.remove(pending)
+        recordResult(text)
+        return text
+    }
+
+    static func message(for error: Error) -> String {
+        userMessage(for: error)
     }
 
     /// Étape opportuniste, distincte de la transcription elle-même : la
