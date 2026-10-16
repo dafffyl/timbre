@@ -28,7 +28,13 @@ struct FileMeetingHistoryStore: MeetingHistoryStore {
 
     func loadAll() -> [MeetingRecord] {
         guard let data = try? Data(contentsOf: fileURL) else { return [] }
-        let records = (try? JSONDecoder().decode([MeetingRecord].self, from: data)) ?? []
+        guard let records = try? JSONDecoder().decode([MeetingRecord].self, from: data) else {
+            // Fichier présent mais illisible : le traiter comme vide
+            // l'écraserait au prochain `save()` et perdrait tout l'historique.
+            // On le met de côté pour qu'il reste récupérable.
+            quarantineCorruptFile()
+            return []
+        }
         return records.sorted { $0.recordedAt > $1.recordedAt }
     }
 
@@ -47,6 +53,12 @@ struct FileMeetingHistoryStore: MeetingHistoryStore {
 
     func delete(id: MeetingRecord.ID) {
         persist(loadAll().filter { $0.id != id })
+    }
+
+    private func quarantineCorruptFile() {
+        let stamp = Int(Date().timeIntervalSince1970)
+        let backup = fileURL.deletingLastPathComponent().appendingPathComponent("meetings.corrupt-\(stamp).json")
+        try? FileManager.default.moveItem(at: fileURL, to: backup)
     }
 
     private func persist(_ records: [MeetingRecord]) {
