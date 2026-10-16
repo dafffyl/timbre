@@ -48,23 +48,43 @@ extension LinearGradient {
 /// l'icône, plus chaleureux que le système par défaut pour une app qui
 /// parle de voix humaines.
 extension Font {
+    /// Le titre d'accueil reste à taille fixe : déjà très grand, le laisser
+    /// croître casserait l'en-tête. Tout le reste suit Dynamic Type.
     static func timbreDisplay(_ size: CGFloat = 40) -> Font {
         .system(size: size, weight: .bold, design: .rounded)
     }
 
     static func timbreTitle(_ size: CGFloat = 22) -> Font {
-        .system(size: size, weight: .semibold, design: .rounded)
+        scaled(size, weight: .semibold)
     }
 
     static func timbreBody(_ size: CGFloat = 17) -> Font {
-        .system(size: size, weight: .regular, design: .rounded)
+        scaled(size, weight: .regular)
     }
 
     static func timbreLabel(_ size: CGFloat = 15) -> Font {
-        .system(size: size, weight: .medium, design: .rounded)
+        scaled(size, weight: .medium)
     }
 
     static func timbreCaption(_ size: CGFloat = 13) -> Font {
-        .system(size: size, weight: .medium, design: .rounded)
+        scaled(size, weight: .medium)
+    }
+
+    /// Ancre chaque taille de référence sur le style de texte système le
+    /// plus proche (tailles par défaut : caption 12, footnote 13,
+    /// subheadline 15, callout 16, body 17, title3 20, title2 22), pour que
+    /// la police grandisse avec le réglage de taille de texte de l'utilisateur.
+    private static func scaled(_ size: CGFloat, weight: Font.Weight) -> Font {
+        let style: Font.TextStyle
+        switch size {
+        case ..<12.5: style = .caption
+        case ..<14: style = .footnote
+        case ..<15.5: style = .subheadline
+        case ..<16.5: style = .callout
+        case ..<18.5: style = .body
+        case ..<21: style = .title3
+        default: style = .title2
+        }
+        return .system(style, design: .rounded, weight: weight)
     }
 }
