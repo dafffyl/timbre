@@ -49,6 +49,12 @@ final class DictationController {
     private var pollTimer: Timer?
     private var graceTimer: Timer?
     private var recordingStartedAt: Date?
+    /// Requête en cours : une dictée qui échoue ou se termine après qu'une
+    /// nouvelle a déjà démarré (fenêtre de grâce) ne doit toucher ni l'état
+    /// ni le fichier de la nouvelle.
+    private var currentRequestID: UUID?
+    private var lastPublishedLevel: Float = 0
+    private var pollTick = 0
 
     private init() {}
 
@@ -75,6 +81,7 @@ final class DictationController {
     }
 
     private func beginRecording(requestID: UUID, resuming: Bool) {
+        currentRequestID = requestID
         if resuming {
             do {
                 try recorder.resumeRecording()
@@ -139,7 +146,7 @@ final class DictationController {
     }
 
     private func pollDuringRecording(requestID: UUID) {
-        guard var request = channel.read(), request.id == requestID else {
+        guard let request = channel.read(), request.id == requestID else {
             // Le clavier a vidé le canal (`cancel()`) ou une autre requête
             // l'a remplacé : on interprète ça comme une annulation.
             cancelRecording()
@@ -158,8 +165,26 @@ final class DictationController {
             return
         }
 
-        request.audioLevel = recorder.currentLevel
-        channel.write(request)
+        // Niveau publié 5×/s au lieu de 10×/s, et seulement s'il a bougé :
+        // chaque écriture réécrit tout le JSON de l'App Group.
+        pollTick += 1
+        let level = recorder.currentLevel
+        guard pollTick % 2 == 0, abs(level - lastPublishedLevel) > 0.02 else { return }
+
+        // Relecture juste avant d'écrire : un arrêt ou une annulation posé
+        // par le clavier depuis le début de ce tick ne doit pas être écrasé
+        // (ni la requête ressuscitée après un `clear()`).
+        guard var latest = channel.read(), latest.id == requestID else {
+            cancelRecording()
+            return
+        }
+        if latest.stopRequested {
+            stopRecordingAndTranscribe(requestID: requestID)
+            return
+        }
+        latest.audioLevel = level
+        lastPublishedLevel = level
+        channel.write(latest)
     }
 
     private func cancelRecording() {
@@ -215,7 +240,7 @@ final class DictationController {
                 ready.statusUpdatedAt = Date()
                 ready.resultText = finalText
                 channel.write(ready)
-                state = .done
+                if currentRequestID == requestID { state = .done }
             } catch {
                 markFailed(requestID: requestID, message: Self.userMessage(for: error))
             }
@@ -273,6 +298,10 @@ final class DictationController {
             request.errorMessage = message
             channel.write(request)
         }
+        // Une dictée plus récente a pris la main : `beginGrace()` fermerait
+        // son fichier en cours et le clavier resterait bloqué en
+        // « enregistrement ».
+        guard currentRequestID == requestID else { return }
         state = .failed(message)
         beginGrace()
     }
