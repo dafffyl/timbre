@@ -36,6 +36,11 @@ final class DictationViewModel {
     /// (C1). Retombe à 0 dès qu'on quitte `.recording`.
     private(set) var audioLevel: Float = 0
 
+    /// Dernier texte dicté (écrit par l'app dans l'App Group, désactivable
+    /// dans ses réglages) — proposé en un tap pour le retrouver après un
+    /// changement de champ ou d'app. Lisible seulement avec Full Access.
+    private(set) var lastResult: String?
+
     /// Appelé quand un résultat prêt est trouvé pendant le polling — le
     /// view model n'a pas accès au `textDocumentProxy`, l'insertion reste
     /// la responsabilité du `KeyboardViewController`.
@@ -54,8 +59,10 @@ final class DictationViewModel {
     func checkForUpdate(hasFullAccess: Bool) -> String? {
         guard hasFullAccess else {
             state = .fullAccessRequired
+            lastResult = nil
             return nil
         }
+        lastResult = channel.lastResult()
 
         // Une erreur reste affichée jusqu'à validation explicite
         // (dismissError) — sinon la prochaine vérification l'effacerait

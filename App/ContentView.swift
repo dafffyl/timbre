@@ -10,6 +10,7 @@ struct ContentView: View {
     @State private var showSettings = false
     @State private var showDiarizationSetup = false
     @State private var showHistory = false
+    @State private var showDictations = false
     @State private var progress = ContentView.currentProgress()
     @Environment(\.scenePhase) private var scenePhase
 
@@ -56,6 +57,12 @@ struct ContentView: View {
                             action: { showHistory = true }
                         )
                         TimbreMenuRow(
+                            icon: "text.bubble.fill",
+                            title: "Dictées récentes",
+                            subtitle: "Retrouver, copier ou réessayer",
+                            action: { showDictations = true }
+                        )
+                        TimbreMenuRow(
                             icon: "gearshape.fill",
                             title: "Réglages",
                             subtitle: "Clé API, vocabulaire, nettoyage",
@@ -76,6 +83,9 @@ struct ContentView: View {
         }
         .sheet(isPresented: $showHistory) {
             MeetingHistoryView()
+        }
+        .sheet(isPresented: $showDictations) {
+            DictationHistoryView()
         }
         .onAppear {
             refreshProgress()

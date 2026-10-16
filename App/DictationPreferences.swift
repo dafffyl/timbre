@@ -14,6 +14,7 @@ import Foundation
 enum DictationPreferences {
     private static let vocabularyKey = "fr.dafffyl.timbre.vocabularyPrompt"
     private static let cleanupEnabledKey = "fr.dafffyl.timbre.cleanupEnabled"
+    private static let keepHistoryKey = "fr.dafffyl.timbre.keepDictationHistory"
     private static let languageKey = "fr.dafffyl.timbre.transcriptionLanguage"
 
     /// Langues proposées dans les réglages — codes ISO-639-1 acceptés par
@@ -29,6 +30,14 @@ enum DictationPreferences {
         ("nl", "Nederlands"),
         ("auto", "Détection automatique"),
     ]
+
+    /// Historique des dictées (texte, local) et « dernière dictée » du
+    /// clavier. Activé par défaut ; désactivable car le texte peut être
+    /// sensible.
+    static var keepHistory: Bool {
+        get { UserDefaults.standard.object(forKey: keepHistoryKey) as? Bool ?? true }
+        set { UserDefaults.standard.set(newValue, forKey: keepHistoryKey) }
+    }
 
     /// Français par défaut : comportement historique de l'app.
     static var language: String {

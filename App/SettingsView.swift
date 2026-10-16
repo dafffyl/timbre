@@ -6,6 +6,7 @@ struct SettingsView: View {
     @State private var apiKey: String = ""
     @State private var vocabulary: String = ""
     @State private var cleanupEnabled = false
+    @State private var keepHistory = true
     @State private var savedConfirmation = false
     @State private var language = DictationPreferences.language
     @State private var saveFailed = false
@@ -64,6 +65,14 @@ struct SettingsView: View {
                     }
                     .listRowBackground(Color.timbreSurface.opacity(0.55))
 
+                    Section {
+                        Toggle("Garder l'historique des dictées", isOn: $keepHistory)
+                            .tint(Color.timbreViolet)
+                    } footer: {
+                        Text("Texte uniquement, stocké sur cet iPhone. Permet de retrouver une dictée et alimente le bouton « Dernière dictée » du clavier. Désactiver efface aussi la dernière dictée du clavier.")
+                    }
+                    .listRowBackground(Color.timbreSurface.opacity(0.55))
+
                     if saveFailed {
                         Label("Impossible d'enregistrer la clé dans le Trousseau.", systemImage: "exclamationmark.triangle.fill")
                             .foregroundStyle(Color.timbreDanger)
@@ -111,12 +120,17 @@ struct SettingsView: View {
         vocabulary = DictationPreferences.vocabularyPrompt
         cleanupEnabled = DictationPreferences.cleanupEnabled
         language = DictationPreferences.language
+        keepHistory = DictationPreferences.keepHistory
     }
 
     private func save() {
         DictationPreferences.vocabularyPrompt = vocabulary
         DictationPreferences.cleanupEnabled = cleanupEnabled
         DictationPreferences.language = language
+        DictationPreferences.keepHistory = keepHistory
+        if !keepHistory {
+            DictationChannel().saveLastResult(nil)
+        }
 
         // Le vocabulaire (potentiellement vidé volontairement) se sauvegarde
         // toujours ; la clé API, elle, ne s'écrase jamais avec une valeur

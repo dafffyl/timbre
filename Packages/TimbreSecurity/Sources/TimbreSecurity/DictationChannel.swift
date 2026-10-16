@@ -9,6 +9,7 @@ import TimbreCore
 public struct DictationChannel: Sendable {
     private static let appGroupID = "group.fr.dafffyl.timbre"
     private static let storageKey = "dictationRequest"
+    private static let lastResultKey = "lastDictationResult"
 
     public init() {}
 
@@ -27,6 +28,22 @@ public struct DictationChannel: Sendable {
     public func read() -> DictationRequest? {
         guard let data = defaults?.data(forKey: Self.storageKey) else { return nil }
         return try? JSONDecoder().decode(DictationRequest.self, from: data)
+    }
+
+    /// Dernier texte dicté, pour le bouton « dernière dictée » du clavier
+    /// (retrouver un texte perdu après un changement de champ ou d'app).
+    /// Même App Group que la requête : accessible au clavier seulement avec
+    /// Full Access (C3). `nil` efface.
+    public func saveLastResult(_ text: String?) {
+        if let text {
+            defaults?.set(text, forKey: Self.lastResultKey)
+        } else {
+            defaults?.removeObject(forKey: Self.lastResultKey)
+        }
+    }
+
+    public func lastResult() -> String? {
+        defaults?.string(forKey: Self.lastResultKey)
     }
 
     public func clear() {
