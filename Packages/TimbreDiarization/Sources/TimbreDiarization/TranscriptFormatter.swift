@@ -10,16 +10,31 @@ public enum TranscriptFormatter {
         var turns: [SpeakerTurn] = []
         var currentSpeaker = first.speaker
         var currentWords: [String] = []
+        var currentStart = first.word.start
+        var currentEnd = first.word.end
+
+        func closeTurn() {
+            turns.append(
+                SpeakerTurn(
+                    speaker: currentSpeaker,
+                    text: currentWords.joined(separator: " "),
+                    start: currentStart,
+                    end: currentEnd
+                )
+            )
+        }
 
         for word in words {
             if word.speaker != currentSpeaker {
-                turns.append(SpeakerTurn(speaker: currentSpeaker, text: currentWords.joined(separator: " ")))
+                closeTurn()
                 currentSpeaker = word.speaker
                 currentWords = []
+                currentStart = word.word.start
             }
             currentWords.append(word.word.text)
+            currentEnd = word.word.end
         }
-        turns.append(SpeakerTurn(speaker: currentSpeaker, text: currentWords.joined(separator: " ")))
+        closeTurn()
 
         return turns
     }

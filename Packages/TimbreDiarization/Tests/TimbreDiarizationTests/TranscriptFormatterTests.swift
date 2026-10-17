@@ -24,7 +24,7 @@ private func word(_ text: String, speaker: SpeakerID?) -> AttributedWord {
 
     let turns = TranscriptFormatter.groupIntoTurns(words)
 
-    #expect(turns == [SpeakerTurn(speaker: speakerA, text: "bonjour à tous")])
+    #expect(turns == [SpeakerTurn(speaker: speakerA, text: "bonjour à tous", start: 0, end: 1)])
 }
 
 @Test func speakerChangeStartsANewTurn() {
@@ -37,8 +37,8 @@ private func word(_ text: String, speaker: SpeakerID?) -> AttributedWord {
     let turns = TranscriptFormatter.groupIntoTurns(words)
 
     #expect(turns == [
-        SpeakerTurn(speaker: speakerA, text: "bonjour"),
-        SpeakerTurn(speaker: speakerB, text: "merci prends"),
+        SpeakerTurn(speaker: speakerA, text: "bonjour", start: 0, end: 1),
+        SpeakerTurn(speaker: speakerB, text: "merci prends", start: 0, end: 1),
     ])
 }
 
@@ -53,9 +53,9 @@ private func word(_ text: String, speaker: SpeakerID?) -> AttributedWord {
     let turns = TranscriptFormatter.groupIntoTurns(words)
 
     #expect(turns == [
-        SpeakerTurn(speaker: speakerA, text: "bonjour"),
-        SpeakerTurn(speaker: nil, text: "silence lointain"),
-        SpeakerTurn(speaker: speakerA, text: "reprenons"),
+        SpeakerTurn(speaker: speakerA, text: "bonjour", start: 0, end: 1),
+        SpeakerTurn(speaker: nil, text: "silence lointain", start: 0, end: 1),
+        SpeakerTurn(speaker: speakerA, text: "reprenons", start: 0, end: 1),
     ])
 }
 

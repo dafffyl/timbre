@@ -15,6 +15,15 @@ struct DictationHistoryView: View {
     @State private var retryingID: UUID?
     @State private var retryError: String?
     @State private var copiedID: UUID?
+    @State private var searchText = ""
+
+    private var filteredRecords: [DictationRecord] {
+        let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !query.isEmpty else { return records }
+        return records.filter {
+            $0.text.range(of: query, options: [.caseInsensitive, .diacriticInsensitive]) != nil
+        }
+    }
 
     var body: some View {
         NavigationStack {
@@ -52,12 +61,13 @@ struct DictationHistoryView: View {
                                 .listRowBackground(Color.clear)
                         }
                         Section("Récentes") {
-                            ForEach(records) { record in
+                            ForEach(filteredRecords) { record in
                                 recordRow(record)
                             }
                             .onDelete { offsets in
+                                let visible = filteredRecords
                                 for index in offsets {
-                                    DictationHistoryStore().delete(id: records[index].id)
+                                    DictationHistoryStore().delete(id: visible[index].id)
                                 }
                                 records = DictationHistoryStore().loadAll()
                             }
@@ -69,6 +79,7 @@ struct DictationHistoryView: View {
             }
             .navigationTitle("Dictées")
             .navigationBarTitleDisplayMode(.inline)
+            .searchable(text: $searchText, prompt: "Rechercher une dictée")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Fermer") { dismiss() }

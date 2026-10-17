@@ -11,6 +11,11 @@ import TimbreDiarization
 struct MeetingHistoryView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var records: [MeetingRecord] = DiarizationEnvironment.historyStore.loadAll()
+    @State private var searchText = ""
+
+    private var filteredRecords: [MeetingRecord] {
+        records.filter { $0.matches(searchQuery: searchText) }
+    }
 
     var body: some View {
         NavigationStack {
@@ -30,7 +35,7 @@ struct MeetingHistoryView: View {
                     .padding(32)
                 } else {
                     List {
-                        ForEach(records) { record in
+                        ForEach(filteredRecords) { record in
                             NavigationLink {
                                 MeetingHistoryDetailView(record: record)
                             } label: {
@@ -40,6 +45,12 @@ struct MeetingHistoryView: View {
                             .listRowSeparator(.hidden)
                         }
                         .onDelete(perform: delete)
+                        if filteredRecords.isEmpty {
+                            Text("Aucun résultat pour « \(searchText) ».")
+                                .font(.timbreBody(15))
+                                .foregroundStyle(Color.timbreTextSecondary)
+                                .listRowBackground(Color.clear)
+                        }
                     }
                     .listStyle(.plain)
                     .scrollContentBackground(.hidden)
@@ -47,6 +58,7 @@ struct MeetingHistoryView: View {
             }
             .navigationTitle("Réunions")
             .navigationBarTitleDisplayMode(.inline)
+            .searchable(text: $searchText, prompt: "Rechercher dans les transcripts")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Fermer") { dismiss() }
@@ -86,8 +98,9 @@ struct MeetingHistoryView: View {
     }
 
     private func delete(at offsets: IndexSet) {
+        let visible = filteredRecords
         for index in offsets {
-            DiarizationEnvironment.historyStore.delete(id: records[index].id)
+            DiarizationEnvironment.historyStore.delete(id: visible[index].id)
         }
         records = DiarizationEnvironment.historyStore.loadAll()
     }
@@ -120,7 +133,7 @@ struct MeetingHistoryDetailView: View {
         .toolbar {
             if !record.turns.isEmpty {
                 ToolbarItem(placement: .primaryAction) {
-                    ShareLink(item: TranscriptFormatting.plainText(for: record.turns, names: record.speakerNames))
+                    exportMenu
                 }
             }
         }
@@ -135,6 +148,38 @@ struct MeetingHistoryDetailView: View {
             Button("Enregistrer") { saveRename() }
             Button("Annuler", role: .cancel) { renamingSpeaker = nil }
         }
+    }
+
+    private var exportMenu: some View {
+        let labels = TranscriptFormatting.displayLabels(for: record.turns, names: record.speakerNames)
+        let title = "Réunion du " + record.recordedAt.formatted(date: .long, time: .shortened)
+        let baseName = "Timbre-" + record.recordedAt.formatted(.iso8601.year().month().day())
+        return Menu {
+            ShareLink(item: TranscriptFormatting.plainText(for: record.turns, names: record.speakerNames)) {
+                Label("Texte", systemImage: "text.alignleft")
+            }
+            ShareLink(
+                item: TranscriptExportFile.markdown(
+                    contents: TranscriptExporter.markdown(turns: record.turns, labels: labels, title: title),
+                    baseName: baseName),
+                preview: SharePreview("\(baseName).md")
+            ) {
+                Label("Markdown (.md)", systemImage: "doc.richtext")
+            }
+            if TranscriptExporter.canExportSRT(turns: record.turns) {
+                ShareLink(
+                    item: TranscriptExportFile.srt(
+                        contents: TranscriptExporter.srt(turns: record.turns, labels: labels),
+                        baseName: baseName),
+                    preview: SharePreview("\(baseName).srt")
+                ) {
+                    Label("Sous-titres (.srt)", systemImage: "captions.bubble")
+                }
+            }
+        } label: {
+            Image(systemName: "square.and.arrow.up")
+        }
+        .accessibilityLabel("Exporter")
     }
 
     /// Vide le nom personnalisé (retombe sur "Locuteur N") plutôt que
