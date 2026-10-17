@@ -34,7 +34,7 @@ struct VoiceProfilesView: View {
                                     Text(profile.name)
                                         .font(.timbreBody(16))
                                         .foregroundStyle(Color.timbreTextPrimary)
-                                    Text("\\(Int(profile.totalSeconds / 60)) min de parole · mis à jour \\(profile.updatedAt.formatted(date: .abbreviated, time: .omitted))")
+                                    Text("\(Int(profile.totalSeconds / 60)) min de parole · mis à jour \(profile.updatedAt.formatted(date: .abbreviated, time: .omitted))")
                                         .font(.timbreCaption())
                                         .foregroundStyle(Color.timbreTextSecondary)
                                 }
