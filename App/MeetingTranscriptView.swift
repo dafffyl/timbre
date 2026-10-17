@@ -89,7 +89,7 @@ struct MeetingTranscriptView: View {
                         }
                         if recognizedVoices > 0 {
                             Label(
-                                "\(recognizedVoices) voix reconnue\(recognizedVoices > 1 ? "s" : "") automatiquement — touche un nom pour le corriger.",
+                                "Voix reconnues automatiquement : \(recognizedVoices) — touche un nom pour le corriger.",
                                 systemImage: "person.wave.2.fill"
                             )
                             .font(.timbreCaption())
@@ -134,7 +134,7 @@ struct MeetingTranscriptView: View {
         }
     }
 
-    private func progress(_ label: String) -> some View {
+    private func progress(_ label: LocalizedStringKey) -> some View {
         VStack(spacing: 16) {
             ProgressView()
                 .tint(Color.timbreViolet)

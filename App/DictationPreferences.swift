@@ -28,7 +28,7 @@ enum DictationPreferences {
         ("it", "Italiano"),
         ("pt", "Português"),
         ("nl", "Nederlands"),
-        ("auto", "Détection automatique"),
+        ("auto", String(localized: "Détection automatique")),
     ]
 
     /// Historique des dictées (texte, local) et « dernière dictée » du
@@ -39,9 +39,15 @@ enum DictationPreferences {
         set { UserDefaults.standard.set(newValue, forKey: keepHistoryKey) }
     }
 
-    /// Français par défaut : comportement historique de l'app.
+    /// Langue de l'appareil si Timbre la propose, sinon le français.
+    private static var deviceDefaultLanguage: String {
+        let code = Locale.current.language.languageCode?.identifier ?? "fr"
+        return supportedLanguages.contains { $0.code == code } ? code : "fr"
+    }
+
+    /// Langue de l'appareil par défaut (français à défaut) : comportement historique de l'app.
     static var language: String {
-        get { UserDefaults.standard.string(forKey: languageKey) ?? "fr" }
+        get { UserDefaults.standard.string(forKey: languageKey) ?? deviceDefaultLanguage }
         set { UserDefaults.standard.set(newValue, forKey: languageKey) }
     }
 

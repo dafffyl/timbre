@@ -63,22 +63,22 @@ final class MeetingReportController {
     }
 
     static func message(for error: Error) -> String {
-        guard let error = error as? SummaryError else { return "Impossible de générer le rapport." }
+        guard let error = error as? SummaryError else { return String(localized: "Impossible de générer le rapport.") }
         switch error {
         case .missingAPIKey:
-            return "Clé API Groq manquante — configure-la dans les réglages."
+            return String(localized: "Clé API Groq manquante — configure-la dans les réglages.")
         case .emptyTranscript:
-            return "Le transcript est vide : rien à résumer."
+            return String(localized: "Le transcript est vide : rien à résumer.")
         case .network:
-            return "Problème réseau — vérifie ta connexion et réessaie."
+            return String(localized: "Problème réseau — vérifie ta connexion et réessaie.")
         case .rateLimited:
-            return "Trop de requêtes envoyées à Groq — réessaie dans un instant, ou choisis le modèle rapide dans les réglages."
+            return String(localized: "Trop de requêtes envoyées à Groq — réessaie dans un instant, ou choisis le modèle rapide dans les réglages.")
         case .server(let statusCode, _) where statusCode == 401 || statusCode == 403:
-            return "Clé API Groq refusée (code \(statusCode)) — vérifie-la dans les réglages."
+            return String(localized: "Clé API Groq refusée (code \(statusCode)) — vérifie-la dans les réglages.")
         case .server(let statusCode, _):
-            return "Erreur Groq (code \(statusCode)) pendant la génération du rapport."
+            return String(localized: "Erreur Groq (code \(statusCode)) pendant la génération du rapport.")
         case .invalidResponse, .decoding:
-            return "Réponse inattendue du modèle — réessaie."
+            return String(localized: "Réponse inattendue du modèle — réessaie.")
         }
     }
 }

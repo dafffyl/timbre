@@ -90,7 +90,7 @@ final class DictationViewModel {
         switch request.status {
         case .pending:
             if Date().timeIntervalSince(request.statusUpdatedAt) > pendingTimeout {
-                giveUp(message: "Timbre n'a pas répondu — réessaie.")
+                giveUp(message: String(localized: "Timbre n'a pas répondu — réessaie."))
             } else {
                 state = .opening
                 startPollingIfNeeded(hasFullAccess: hasFullAccess)
@@ -106,7 +106,7 @@ final class DictationViewModel {
         case .transcribing:
             audioLevel = 0
             if Date().timeIntervalSince(request.statusUpdatedAt) > transcribingTimeout {
-                giveUp(message: "La transcription a pris trop de temps — réessaie.")
+                giveUp(message: String(localized: "La transcription a pris trop de temps — réessaie."))
             } else {
                 state = .transcribing
                 startPollingIfNeeded(hasFullAccess: hasFullAccess)
@@ -123,7 +123,7 @@ final class DictationViewModel {
         case .failed:
             clearPending()
             stopPolling()
-            state = .error(request.errorMessage ?? "Échec côté app — réessaie.")
+            state = .error(request.errorMessage ?? String(localized: "Échec côté app — réessaie."))
             audioLevel = 0
             return nil
         }

@@ -121,12 +121,12 @@ enum TranscriptFormatting {
     static func displayLabels(for turns: [SpeakerTurn], names: [String: String] = [:]) -> [String] {
         let order = speakerOrder(in: turns)
         return turns.map { turn in
-            guard let speaker = turn.speaker else { return "Non identifié" }
+            guard let speaker = turn.speaker else { return String(localized: "Non identifié") }
             if let customName = names[speaker.rawValue], !customName.isEmpty {
                 return customName
             }
-            guard let index = order.firstIndex(of: speaker) else { return "Non identifié" }
-            return "Locuteur \(index + 1)"
+            guard let index = order.firstIndex(of: speaker) else { return String(localized: "Non identifié") }
+            return String(localized: "Locuteur \(index + 1)")
         }
     }
 

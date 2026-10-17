@@ -14,17 +14,17 @@ enum SummaryPreferences {
     private static let autoGenerateKey = "fr.dafffyl.timbre.summary.autoGenerate"
 
     static let models: [(id: String, name: String)] = [
-        ("llama-3.3-70b-versatile", "Précis — Llama 3.3 70B"),
-        ("llama-3.1-8b-instant", "Rapide — Llama 3.1 8B"),
+        ("llama-3.3-70b-versatile", String(localized: "Précis — Llama 3.3 70B")),
+        ("llama-3.1-8b-instant", String(localized: "Rapide — Llama 3.1 8B")),
     ]
 
     static var defaultInstructions: String {
-        """
+        String(localized: """
         Structure le compte rendu ainsi : 1) Résumé en 3 à 5 phrases ; \
         2) Points clés par sujet ; 3) Décisions prises ; 4) Actions à mener \
         (qui, quoi, échéance si elle est citée) ; 5) Questions restées \
         ouvertes. Reste factuel et concis.
-        """
+        """)
     }
 
     /// Vide ou jamais défini : repli sur les instructions par défaut.

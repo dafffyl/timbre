@@ -85,7 +85,7 @@ final class DictationController {
             do {
                 try recorder.resumeRecording()
             } catch {
-                markFailed(requestID: requestID, message: "Impossible de reprendre l'enregistrement.")
+                markFailed(requestID: requestID, message: String(localized: "Impossible de reprendre l'enregistrement."))
                 return
             }
             claimAndStartPolling(requestID: requestID)
@@ -95,13 +95,13 @@ final class DictationController {
         Task { @MainActor in
             let allowed = await requestMicrophonePermission()
             guard allowed else {
-                markFailed(requestID: requestID, message: "Accès micro refusé — active-le dans Réglages.")
+                markFailed(requestID: requestID, message: String(localized: "Accès micro refusé — active-le dans Réglages."))
                 return
             }
             do {
                 try recorder.start()
             } catch {
-                markFailed(requestID: requestID, message: "Impossible de démarrer l'enregistrement.")
+                markFailed(requestID: requestID, message: String(localized: "Impossible de démarrer l'enregistrement."))
                 return
             }
             claimAndStartPolling(requestID: requestID)
@@ -342,31 +342,31 @@ final class DictationController {
 
     private static func userMessage(for error: Error) -> String {
         guard let error = error as? TranscriptionError else {
-            return "Erreur inattendue."
+            return String(localized: "Erreur inattendue.")
         }
         switch error {
         case .missingAPIKey:
-            return "Clé API Groq manquante — configure-la dans les réglages."
+            return String(localized: "Clé API Groq manquante — configure-la dans les réglages.")
         case .fileTooLarge:
-            return "Enregistrement trop long pour Groq (25 Mo max)."
+            return String(localized: "Enregistrement trop long pour Groq (25 Mo max).")
         case .network:
-            return "Problème réseau — vérifie ta connexion."
+            return String(localized: "Problème réseau — vérifie ta connexion.")
         case .rateLimited:
-            return "Trop de requêtes envoyées à Groq — réessaie dans un instant."
+            return String(localized: "Trop de requêtes envoyées à Groq — réessaie dans un instant.")
         case .server(let statusCode, let rawMessage):
             let detail = Self.humanReadableDetail(from: rawMessage)
             if statusCode == 401 || statusCode == 403 {
                 let suffix = detail.map { " : \($0)" } ?? ""
-                return "Clé API Groq refusée (code \(statusCode))\(suffix) — vérifie-la sur console.groq.com."
+                return String(localized: "Clé API Groq refusée (code \(statusCode))\(suffix) — vérifie-la sur console.groq.com.")
             }
             if let detail {
-                return "Erreur Groq (code \(statusCode)) : \(detail)"
+                return String(localized: "Erreur Groq (code \(statusCode)) : \(detail)")
             }
-            return "Erreur Groq (code \(statusCode))."
+            return String(localized: "Erreur Groq (code \(statusCode)).")
         case .decoding, .invalidResponse:
-            return "Réponse inattendue de Groq."
+            return String(localized: "Réponse inattendue de Groq.")
         case .cancelled:
-            return "Annulé."
+            return String(localized: "Annulé.")
         }
     }
 

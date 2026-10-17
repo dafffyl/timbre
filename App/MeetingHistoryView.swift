@@ -289,7 +289,7 @@ struct MeetingHistoryDetailView: View {
 
     private var exportMenu: some View {
         let labels = TranscriptFormatting.displayLabels(for: record.turns, names: record.speakerNames)
-        let title = "Réunion du " + record.recordedAt.formatted(date: .long, time: .shortened)
+        let title = String(localized: "Réunion du \(record.recordedAt.formatted(date: .long, time: .shortened))")
         let baseName = "Timbre-" + record.recordedAt.formatted(.iso8601.year().month().day())
         return Menu {
             ShareLink(item: TranscriptFormatting.plainText(for: record.turns, names: record.speakerNames)) {
@@ -300,7 +300,7 @@ struct MeetingHistoryDetailView: View {
                     contents: TranscriptExporter.markdown(
                         turns: record.turns, labels: labels, title: title,
                         report: record.report?.text,
-                        reportTitle: "Rapport", transcriptTitle: "Transcript"),
+                        reportTitle: String(localized: "Rapport"), transcriptTitle: String(localized: "Transcript")),
                     baseName: baseName),
                 preview: SharePreview("\(baseName).md")
             ) {

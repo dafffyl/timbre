@@ -45,13 +45,13 @@ final class MeetingRecordingController {
     func start() async {
         let allowed = await requestMicrophonePermission()
         guard allowed else {
-            state = .failed("Accès micro refusé — active-le dans Réglages.")
+            state = .failed(String(localized: "Accès micro refusé — active-le dans Réglages."))
             return
         }
         do {
             try recorder.start()
         } catch {
-            state = .failed("Impossible de démarrer l'enregistrement.")
+            state = .failed(String(localized: "Impossible de démarrer l'enregistrement."))
             return
         }
         recorder.onUnrecoverableInterruption = { [weak self] in
@@ -65,7 +65,7 @@ final class MeetingRecordingController {
 
     private func handleUnrecoverableInterruption() {
         guard state == .recording else { return }
-        autoStopMessage = "Une coupure audio système (appel, Siri, alarme...) a arrêté l'enregistrement. Transcription de ce qui a été capturé jusque-là."
+        autoStopMessage = String(localized: "Une coupure audio système (appel, Siri, alarme...) a arrêté l'enregistrement. Transcription de ce qui a été capturé jusque-là.")
         autoStoppedURL = stop()
     }
 
@@ -99,7 +99,7 @@ final class MeetingRecordingController {
         if elapsed > Self.maxRecordingDuration {
             // Même chemin qu'une interruption : la vue bascule vers la
             // transcription du fichier plutôt que de le jeter en silence.
-            autoStopMessage = "La durée maximale de 4 h est atteinte : l'enregistrement s'est arrêté. Transcription de ce qui a été capturé."
+            autoStopMessage = String(localized: "La durée maximale de 4 h est atteinte : l'enregistrement s'est arrêté. Transcription de ce qui a été capturé.")
             autoStoppedURL = stop()
         }
     }

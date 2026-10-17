@@ -1,0 +1,22 @@
+{
+  "sourceLanguage": "fr",
+  "strings": {
+    "NSMicrophoneUsageDescription": {
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Timbre a besoin du micro pour dicter le texte que tu insères dans le clavier."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Timbre needs the microphone to dictate the text you insert with the keyboard."
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}
