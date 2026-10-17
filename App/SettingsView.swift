@@ -7,6 +7,9 @@ struct SettingsView: View {
     @State private var vocabulary: String = ""
     @State private var cleanupEnabled = false
     @State private var keepHistory = true
+    @State private var summaryInstructions = SummaryPreferences.instructions
+    @State private var summaryModel = SummaryPreferences.model
+    @State private var summaryAuto = SummaryPreferences.autoGenerate
     @State private var savedConfirmation = false
     @State private var language = DictationPreferences.language
     @State private var saveFailed = false
@@ -66,6 +69,27 @@ struct SettingsView: View {
                     .listRowBackground(Color.timbreSurface.opacity(0.55))
 
                     Section {
+                        TextEditor(text: $summaryInstructions)
+                            .frame(minHeight: 130)
+                        Button("Rétablir les instructions par défaut") {
+                            summaryInstructions = SummaryPreferences.defaultInstructions
+                        }
+                        .foregroundStyle(Color.timbreViolet)
+                        Picker("Modèle", selection: $summaryModel) {
+                            ForEach(SummaryPreferences.models, id: \.id) { model in
+                                Text(model.name).tag(model.id)
+                            }
+                        }
+                        Toggle("Générer le rapport automatiquement", isOn: $summaryAuto)
+                            .tint(Color.timbreViolet)
+                    } header: {
+                        Text("Rapport de réunion")
+                    } footer: {
+                        Text("Ces instructions guident le modèle qui rédige le compte rendu (structure, ton, sections…). Tu peux les ajuster réunion par réunion. Le texte du transcript est envoyé à Groq pour la rédaction ; le modèle précis est plus lent et plus limité en débit.")
+                    }
+                    .listRowBackground(Color.timbreSurface.opacity(0.55))
+
+                    Section {
                         Toggle("Garder l'historique des dictées", isOn: $keepHistory)
                             .tint(Color.timbreViolet)
                     } footer: {
@@ -121,6 +145,9 @@ struct SettingsView: View {
         cleanupEnabled = DictationPreferences.cleanupEnabled
         language = DictationPreferences.language
         keepHistory = DictationPreferences.keepHistory
+        summaryInstructions = SummaryPreferences.instructions
+        summaryModel = SummaryPreferences.model
+        summaryAuto = SummaryPreferences.autoGenerate
     }
 
     private func save() {
@@ -128,6 +155,9 @@ struct SettingsView: View {
         DictationPreferences.cleanupEnabled = cleanupEnabled
         DictationPreferences.language = language
         DictationPreferences.keepHistory = keepHistory
+        SummaryPreferences.instructions = summaryInstructions
+        SummaryPreferences.model = summaryModel
+        SummaryPreferences.autoGenerate = summaryAuto
         if !keepHistory {
             DictationChannel().saveLastResult(nil)
         }
