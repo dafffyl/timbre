@@ -10,4 +10,7 @@ import Foundation
 public protocol DiarizationProvider: Sendable {
     func prepareModels() async throws
     func diarize(_ audioURL: URL) async throws -> [SpeakerSegment]
+    /// Segments + empreinte vocale de chaque locuteur (reconnaissance des
+    /// voix, ADR-0007). Valeur par défaut fournie par une extension.
+    func diarizeDetailed(_ audioURL: URL) async throws -> DiarizationOutput
 }
