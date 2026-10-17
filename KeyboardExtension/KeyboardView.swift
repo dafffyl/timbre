@@ -236,7 +236,9 @@ struct KeyboardView: View {
 
     private var waveform: some View {
         HStack(alignment: .center, spacing: 3) {
-            ForEach(Array(levelHistory.enumerated()), id: \.offset) { _, level in
+            // Complétée à gauche par des barres au repos : la bulle garde sa
+            // forme même avant la première mesure ou en cas de silence.
+            ForEach(Array(paddedLevels.enumerated()), id: \.offset) { _, level in
                 RoundedRectangle(cornerRadius: 1.5)
                     .fill(accentGradient)
                     .frame(width: 3, height: barHeight(for: level))
@@ -244,6 +246,10 @@ struct KeyboardView: View {
         }
         .frame(width: CGFloat(waveformBarCount) * 6, height: 24)
         .accessibilityHidden(true)
+    }
+
+    private var paddedLevels: [Float] {
+        Array(repeating: 0, count: max(0, waveformBarCount - levelHistory.count)) + levelHistory
     }
 
     private func barHeight(for level: Float) -> CGFloat {

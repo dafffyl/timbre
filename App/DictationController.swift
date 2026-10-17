@@ -53,7 +53,6 @@ final class DictationController {
     /// nouvelle a déjà démarré (fenêtre de grâce) ne doit toucher ni l'état
     /// ni le fichier de la nouvelle.
     private var currentRequestID: UUID?
-    private var lastPublishedLevel: Float = 0
     private var pollTick = 0
 
     private init() {}
@@ -165,11 +164,13 @@ final class DictationController {
             return
         }
 
-        // Niveau publié 5×/s au lieu de 10×/s, et seulement s'il a bougé :
-        // chaque écriture réécrit tout le JSON de l'App Group.
+        // Niveau publié 5×/s au lieu de 10×/s : chaque écriture réécrit tout
+        // le JSON de l'App Group. Toujours publié, même s'il est stable : le
+        // clavier ajoute une barre d'onde à chaque mise à jour, sans quoi
+        // l'onde reste vide dans un environnement calme.
         pollTick += 1
+        guard pollTick % 2 == 0 else { return }
         let level = recorder.currentLevel
-        guard pollTick % 2 == 0, abs(level - lastPublishedLevel) > 0.02 else { return }
 
         // Relecture juste avant d'écrire : un arrêt ou une annulation posé
         // par le clavier depuis le début de ce tick ne doit pas être écrasé
@@ -183,7 +184,6 @@ final class DictationController {
             return
         }
         latest.audioLevel = level
-        lastPublishedLevel = level
         channel.write(latest)
     }
 
