@@ -159,18 +159,18 @@ struct ContentView: View {
 
     private var statusTitle: String {
         switch controller.state {
-        case .idle: "Prêt"
-        case .recording: "Enregistrement en cours"
-        case .transcribing: "Transcription en cours…"
-        case .done: "Terminé"
+        case .idle: String(localized: "Prêt")
+        case .recording: String(localized: "Enregistrement en cours")
+        case .transcribing: String(localized: "Transcription en cours…")
+        case .done: String(localized: "Terminé")
         case .failed(let message): message
         }
     }
 
     private var statusSubtitle: String? {
         switch controller.state {
-        case .idle: "En attente d'une demande du clavier"
-        case .recording, .done: "Contrôle depuis le clavier — reviens dans ton app"
+        case .idle: String(localized: "En attente d'une demande du clavier")
+        case .recording, .done: String(localized: "Contrôle depuis le clavier — reviens dans ton app")
         case .transcribing, .failed: nil
         }
     }

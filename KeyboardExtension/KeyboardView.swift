@@ -256,7 +256,7 @@ struct KeyboardView: View {
         4 + CGFloat(level) * 20
     }
 
-    private func progressPill(label: String, @ViewBuilder trailing: () -> some View) -> some View {
+    private func progressPill(label: LocalizedStringKey, @ViewBuilder trailing: () -> some View) -> some View {
         HStack(spacing: 8) {
             ProgressView().tint(violet)
             Text(label)
@@ -441,7 +441,7 @@ struct KeyboardView: View {
         }
         .buttonStyle(.plain)
         .accessibilityLabel("Majuscule")
-        .accessibilityValue(shiftState == .locked ? "Verrouillée" : (shiftState == .shifted ? "Activée" : "Désactivée"))
+        .accessibilityValue(shiftState == .locked ? String(localized: "Verrouillée") : (shiftState == .shifted ? String(localized: "Activée") : String(localized: "Désactivée")))
         .accessibilityAddTraits(.isKeyboardKey)
     }
 
@@ -502,7 +502,7 @@ struct KeyboardView: View {
                     .clipShape(RoundedRectangle(cornerRadius: 8))
             }
             .buttonStyle(.plain)
-            .accessibilityLabel(isNumericPage ? "Lettres" : "Chiffres et symboles")
+            .accessibilityLabel(isNumericPage ? String(localized: "Lettres") : String(localized: "Chiffres et symboles"))
             .accessibilityAddTraits(.isKeyboardKey)
 
             Button {

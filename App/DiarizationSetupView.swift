@@ -94,11 +94,11 @@ struct DiarizationSetupView: View {
 
     private var title: String {
         switch viewModel.state {
-        case nil: "Vérification…"
-        case .ready: "Prêt"
-        case .needsConsent: "Télécharger le modèle de diarisation"
-        case .needsWiFi: "Connexion Wi-Fi requise"
-        case .failed: "Échec du téléchargement"
+        case nil: String(localized: "Vérification…")
+        case .ready: String(localized: "Prêt")
+        case .needsConsent: String(localized: "Télécharger le modèle de diarisation")
+        case .needsWiFi: String(localized: "Connexion Wi-Fi requise")
+        case .failed: String(localized: "Échec du téléchargement")
         }
     }
 
@@ -107,11 +107,11 @@ struct DiarizationSetupView: View {
         case nil:
             ""
         case .ready:
-            "Le modèle de reconnaissance des locuteurs est prêt sur cet appareil."
+            String(localized: "Le modèle de reconnaissance des locuteurs est prêt sur cet appareil.")
         case .needsConsent:
-            "La distinction des locuteurs fonctionne entièrement sur ton téléphone, mais nécessite un téléchargement unique d'environ 500 Mo. Toujours sur Wi-Fi, jamais sur données cellulaires."
+            String(localized: "La distinction des locuteurs fonctionne entièrement sur ton téléphone, mais nécessite un téléchargement unique d'environ 500 Mo. Toujours sur Wi-Fi, jamais sur données cellulaires.")
         case .needsWiFi:
-            "Le téléchargement du modèle (~500 Mo) nécessite une connexion Wi-Fi — connecte-toi puis réessaie."
+            String(localized: "Le téléchargement du modèle (~500 Mo) nécessite une connexion Wi-Fi — connecte-toi puis réessaie.")
         case .failed(let reason):
             reason
         }

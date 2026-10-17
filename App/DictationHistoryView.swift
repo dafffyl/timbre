@@ -37,8 +37,8 @@ struct DictationHistoryView: View {
                             .foregroundStyle(Color.timbreTextSecondary)
                             .accessibilityHidden(true)
                         Text(DictationPreferences.keepHistory
-                            ? "Aucune dictée pour l'instant."
-                            : "L'historique des dictées est désactivé dans les réglages.")
+                            ? String(localized: "Aucune dictée pour l'instant.")
+                            : String(localized: "L'historique des dictées est désactivé dans les réglages."))
                             .font(.timbreBody(15))
                             .foregroundStyle(Color.timbreTextSecondary)
                             .multilineTextAlignment(.center)
@@ -108,7 +108,7 @@ struct DictationHistoryView: View {
                     .foregroundStyle(Color.timbreTextPrimary)
                     .multilineTextAlignment(.leading)
                     .lineLimit(4)
-                Text(copiedID == record.id ? "Copié" : record.date.formatted(date: .abbreviated, time: .shortened))
+                Text(copiedID == record.id ? String(localized: "Copié") : record.date.formatted(date: .abbreviated, time: .shortened))
                     .font(.timbreCaption())
                     .foregroundStyle(copiedID == record.id ? Color.timbreViolet : Color.timbreTextSecondary)
             }

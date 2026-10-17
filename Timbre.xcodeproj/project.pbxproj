@@ -297,9 +297,10 @@
 				};
 			};
 			buildConfigurationList = 374B49F9303F8EF90034B5D3 /* Build configuration list for PBXProject "Timbre" */;
-			developmentRegion = en;
+			developmentRegion = fr;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				fr,
 				en,
 				Base,
 			);

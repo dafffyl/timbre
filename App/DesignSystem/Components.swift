@@ -109,8 +109,8 @@ struct TimbreSecondaryButtonStyle: ButtonStyle {
 /// — remplace les `Button` texte bleu par défaut de l'écran d'accueil.
 struct TimbreMenuRow: View {
     let icon: String
-    let title: String
-    let subtitle: String
+    let title: LocalizedStringKey
+    let subtitle: LocalizedStringKey
     let action: () -> Void
 
     var body: some View {

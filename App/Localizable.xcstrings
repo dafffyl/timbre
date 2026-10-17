@@ -1,0 +1,1642 @@
+{
+  "sourceLanguage": "fr",
+  "strings": {
+    "%@.md": {
+      "shouldTranslate": false
+    },
+    "%@.srt": {
+      "shouldTranslate": false
+    },
+    "%lld min de parole · mis à jour %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld min of speech · updated %@"
+          }
+        }
+      }
+    },
+    "Accès micro refusé — active-le dans Réglages.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Microphone access denied — turn it on in Settings."
+          }
+        }
+      }
+    },
+    "Active le clavier Timbre": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turn on the Timbre keyboard"
+          }
+        }
+      }
+    },
+    "Activer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turn on"
+          }
+        }
+      }
+    },
+    "Activer la reconnaissance des voix ?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turn on voice recognition?"
+          }
+        }
+      }
+    },
+    "Affichage": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "View"
+          }
+        }
+      }
+    },
+    "Ajoute ta clé API Groq": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add your Groq API key"
+          }
+        }
+      }
+    },
+    "Analyse des locuteurs…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Analyzing speakers…"
+          }
+        }
+      }
+    },
+    "Annuler": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancel"
+          }
+        }
+      }
+    },
+    "Annulé.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancelled."
+          }
+        }
+      }
+    },
+    "Assemblage du transcript…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Assembling the transcript…"
+          }
+        }
+      }
+    },
+    "Aucun résultat pour « %@ ».": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No results for “%@”."
+          }
+        }
+      }
+    },
+    "Aucune dictée pour l'instant.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No dictations yet."
+          }
+        }
+      }
+    },
+    "Aucune parole détectée.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No speech detected."
+          }
+        }
+      }
+    },
+    "Aucune réunion transcrite pour l'instant.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No transcribed meetings yet."
+          }
+        }
+      }
+    },
+    "Aucune voix connue. Nomme un locuteur dans le transcript d'une réunion (avec la reconnaissance activée) pour qu'il soit reconnu la prochaine fois.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No known voices yet. Name a speaker in a meeting transcript (with recognition turned on) and they'll be recognized next time."
+          }
+        }
+      }
+    },
+    "Autorise l'accès complet": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Allow Full Access"
+          }
+        }
+      }
+    },
+    "C'est fait": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Done"
+          }
+        }
+      }
+    },
+    "Ce qui distingue deux voix sur la même note": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What tells two voices apart on the same note"
+          }
+        }
+      }
+    },
+    "Certains passages n'ont pas pu être transcrits (réseau).": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Some passages couldn't be transcribed (network)."
+          }
+        }
+      }
+    },
+    "Ces instructions guident le modèle qui rédige le compte rendu (structure, ton, sections…). Tu peux les ajuster réunion par réunion. Le texte du transcript est envoyé à Groq pour la rédaction ; le modèle précis est plus lent et plus limité en débit.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "These instructions guide the model that writes the meeting report (structure, tone, sections…). You can adjust them meeting by meeting. The transcript text is sent to Groq to write the report; the accurate model is slower and more rate-limited."
+          }
+        }
+      }
+    },
+    "Clé API Groq": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Groq API key"
+          }
+        }
+      }
+    },
+    "Clé API Groq manquante — configure-la dans les réglages.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Groq API key missing — set it in Settings."
+          }
+        }
+      }
+    },
+    "Clé API Groq refusée (code %lld) — vérifie-la dans les réglages.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Groq API key rejected (code %lld) — check it in Settings."
+          }
+        }
+      }
+    },
+    "Clé API Groq refusée (code %lld)%@ — vérifie-la sur console.groq.com.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Groq API key rejected (code %lld)%@ — check it at console.groq.com."
+          }
+        }
+      }
+    },
+    "Clé API, vocabulaire, nettoyage": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "API key, vocabulary, cleanup"
+          }
+        }
+      }
+    },
+    "Configure Timbre": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Set up Timbre"
+          }
+        }
+      }
+    },
+    "Connexion Wi-Fi requise": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wi-Fi connection required"
+          }
+        }
+      }
+    },
+    "Continuer l'enregistrement": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keep recording"
+          }
+        }
+      }
+    },
+    "Contrôle depuis le clavier — reviens dans ton app": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Controlled from the keyboard — go back to your app"
+          }
+        }
+      }
+    },
+    "Copie le texte": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copies the text"
+          }
+        }
+      }
+    },
+    "Copier": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copy"
+          }
+        }
+      }
+    },
+    "Copié": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copied"
+          }
+        }
+      }
+    },
+    "Dans le même écran, active « Autoriser l'accès complet » : sans lui le clavier ne peut pas joindre l'app. Timbre ne lit jamais ce que tu tapes.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "On the same screen, turn on “Allow Full Access”: without it the keyboard can't reach the app. Timbre never reads what you type."
+          }
+        }
+      }
+    },
+    "Dans n'importe quelle app, maintiens la touche globe pour choisir Timbre, puis touche « Dicter ». Reviens ensuite à ton app manuellement.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In any app, hold the globe key to choose Timbre, then tap “Dictate”. Then go back to your app manually."
+          }
+        }
+      }
+    },
+    "Dictée non transcrite": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Untranscribed dictation"
+          }
+        }
+      }
+    },
+    "Dictées": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dictations"
+          }
+        }
+      }
+    },
+    "Dictées récentes": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recent dictations"
+          }
+        }
+      }
+    },
+    "Démarrer une réunion": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Start a meeting"
+          }
+        }
+      }
+    },
+    "Détection automatique": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Automatic detection"
+          }
+        }
+      }
+    },
+    "En attente d'une demande du clavier": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Waiting for a request from the keyboard"
+          }
+        }
+      }
+    },
+    "Enregistrement": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recording"
+          }
+        }
+      }
+    },
+    "Enregistrement en cours": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recording"
+          }
+        }
+      }
+    },
+    "Enregistrement interrompu": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recording interrupted"
+          }
+        }
+      }
+    },
+    "Enregistrement trop long pour Groq (25 Mo max).": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recording too long for Groq (25 MB max)."
+          }
+        }
+      }
+    },
+    "Enregistrer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save"
+          }
+        }
+      }
+    },
+    "Enregistrer comme réglage": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save as default"
+          }
+        }
+      }
+    },
+    "Enregistrer et distinguer les locuteurs": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Record and tell speakers apart"
+          }
+        }
+      }
+    },
+    "Enregistré": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saved"
+          }
+        }
+      }
+    },
+    "Erreur Groq (code %lld) : %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Groq error (code %lld): %@"
+          }
+        }
+      }
+    },
+    "Erreur Groq (code %lld) pendant la génération du rapport.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Groq error (code %lld) while generating the report."
+          }
+        }
+      }
+    },
+    "Erreur Groq (code %lld).": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Groq error (code %lld)."
+          }
+        }
+      }
+    },
+    "Erreur inattendue.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unexpected error."
+          }
+        }
+      }
+    },
+    "Erreur pendant la transcription de la réunion.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Error while transcribing the meeting."
+          }
+        }
+      }
+    },
+    "Ex. Kubernetes, Aymeric, Groq…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "E.g. Kubernetes, Aymeric, Groq…"
+          }
+        }
+      }
+    },
+    "Exporter": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Export"
+          }
+        }
+      }
+    },
+    "Fais une première dictée": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Do a first dictation"
+          }
+        }
+      }
+    },
+    "Fermer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Close"
+          }
+        }
+      }
+    },
+    "Garder l'historique des dictées": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keep dictation history"
+          }
+        }
+      }
+    },
+    "Groq": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Groq"
+          }
+        }
+      }
+    },
+    "Générer le rapport": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Generate report"
+          }
+        }
+      }
+    },
+    "Générer le rapport automatiquement": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Generate the report automatically"
+          }
+        }
+      }
+    },
+    "Généré le %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Generated on %@"
+          }
+        }
+      }
+    },
+    "Historique et export": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "History and export"
+          }
+        }
+      }
+    },
+    "Impossible d'enregistrer la clé dans le Trousseau.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't save the key to the Keychain."
+          }
+        }
+      }
+    },
+    "Impossible de démarrer l'enregistrement.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't start recording."
+          }
+        }
+      }
+    },
+    "Impossible de générer le rapport.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't generate the report."
+          }
+        }
+      }
+    },
+    "Impossible de préparer l'analyse des locuteurs. L'enregistrement est conservé, réessaie.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't prepare speaker analysis. The recording is kept — try again."
+          }
+        }
+      }
+    },
+    "Impossible de reprendre l'enregistrement.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't resume recording."
+          }
+        }
+      }
+    },
+    "Instructions pour ce rapport": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Instructions for this report"
+          }
+        }
+      }
+    },
+    "L'historique des dictées est désactivé dans les réglages.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dictation history is turned off in Settings."
+          }
+        }
+      }
+    },
+    "La distinction des locuteurs fonctionne entièrement sur ton téléphone, mais nécessite un téléchargement unique d'environ 500 Mo. Toujours sur Wi-Fi, jamais sur données cellulaires.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Telling speakers apart runs entirely on your phone, but needs a one-time download of about 500 MB. Always over Wi-Fi, never on cellular data."
+          }
+        }
+      }
+    },
+    "La durée maximale de 4 h est atteinte : l'enregistrement s'est arrêté. Transcription de ce qui a été capturé.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The 4-hour limit was reached: recording stopped. Transcribing what was captured."
+          }
+        }
+      }
+    },
+    "Langue": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Language"
+          }
+        }
+      }
+    },
+    "Langue de transcription": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Transcription language"
+          }
+        }
+      }
+    },
+    "Le modèle de reconnaissance des locuteurs est prêt sur cet appareil.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The speaker recognition model is ready on this device."
+          }
+        }
+      }
+    },
+    "Le texte du transcript est envoyé à Groq (même clé que la transcription) pour rédiger un compte rendu selon tes instructions.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The transcript text is sent to Groq (same key as transcription) to write a report following your instructions."
+          }
+        }
+      }
+    },
+    "Le transcript est vide : rien à résumer.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The transcript is empty: nothing to summarize."
+          }
+        }
+      }
+    },
+    "Le téléchargement du modèle (~500 Mo) nécessite une connexion Wi-Fi — connecte-toi puis réessaie.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Downloading the model (~500 MB) requires a Wi-Fi connection — connect and try again."
+          }
+        }
+      }
+    },
+    "Les modèles d'analyse des locuteurs ne sont pas installés — prépare-les dans les réglages (Wi-Fi requis). L'enregistrement est conservé.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The speaker analysis models aren't installed — set them up in Settings (Wi-Fi required). The recording is kept."
+          }
+        }
+      }
+    },
+    "Les voix connues et les empreintes de toutes les réunions seront effacées. Les noms déjà donnés dans les transcripts restent.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Known voices and the voiceprints of all meetings will be erased. Names already given in transcripts stay."
+          }
+        }
+      }
+    },
+    "Locuteur %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Speaker %lld"
+          }
+        }
+      }
+    },
+    "Markdown (.md)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Markdown (.md)"
+          }
+        }
+      }
+    },
+    "Modèle": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Model"
+          }
+        }
+      }
+    },
+    "Nettoyer automatiquement le texte": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clean up text automatically"
+          }
+        }
+      }
+    },
+    "Nom": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Name"
+          }
+        }
+      }
+    },
+    "Noms propres ou jargon technique fréquents — améliore leur reconnaissance par Whisper.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Frequent proper names or technical jargon — improves how Whisper recognizes them."
+          }
+        }
+      }
+    },
+    "Non identifié": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unidentified"
+          }
+        }
+      }
+    },
+    "Nécessaire pour transcrire. Gratuite sur console.groq.com.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Required to transcribe. Free at console.groq.com."
+          }
+        }
+      }
+    },
+    "OK": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OK"
+          }
+        }
+      }
+    },
+    "Ouvrir Réglages iOS": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open iOS Settings"
+          }
+        }
+      }
+    },
+    "Ouvrir les réglages": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open settings"
+          }
+        }
+      }
+    },
+    "Pas encore de rapport": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No report yet"
+          }
+        }
+      }
+    },
+    "Problème réseau pendant la transcription.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Network problem during transcription."
+          }
+        }
+      }
+    },
+    "Problème réseau — vérifie ta connexion et réessaie.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Network problem — check your connection and try again."
+          }
+        }
+      }
+    },
+    "Problème réseau — vérifie ta connexion.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Network problem — check your connection."
+          }
+        }
+      }
+    },
+    "Progression : %lld/4": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Progress: %lld/4"
+          }
+        }
+      }
+    },
+    "Précis — Llama 3.3 70B": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Accurate — Llama 3.3 70B"
+          }
+        }
+      }
+    },
+    "Prêt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ready"
+          }
+        }
+      }
+    },
+    "Rapide — Llama 3.1 8B": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fast — Llama 3.1 8B"
+          }
+        }
+      }
+    },
+    "Rapport": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Report"
+          }
+        }
+      }
+    },
+    "Rapport + transcript (.md)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Report + transcript (.md)"
+          }
+        }
+      }
+    },
+    "Rapport de réunion": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Meeting report"
+          }
+        }
+      }
+    },
+    "Rapport seul (texte)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Report only (text)"
+          }
+        }
+      }
+    },
+    "Rechercher dans les transcripts": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Search transcripts"
+          }
+        }
+      }
+    },
+    "Rechercher une dictée": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Search dictations"
+          }
+        }
+      }
+    },
+    "Reconnaissance des voix": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Voice recognition"
+          }
+        }
+      }
+    },
+    "Reconnaître les voix": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recognize voices"
+          }
+        }
+      }
+    },
+    "Renommer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rename"
+          }
+        }
+      }
+    },
+    "Renommer la voix": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rename voice"
+          }
+        }
+      }
+    },
+    "Renommer le locuteur": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rename speaker"
+          }
+        }
+      }
+    },
+    "Reprise de la transcription…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Resuming transcription…"
+          }
+        }
+      }
+    },
+    "Retire les hésitations et corrige la ponctuation via un second appel IA, après la transcription. Expérimental : désactivé par défaut.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Removes hesitations and fixes punctuation with a second AI call after transcription. Experimental: off by default."
+          }
+        }
+      }
+    },
+    "Retrouve automatiquement le nom des personnes déjà nommées dans une réunion précédente. Empreintes stockées uniquement sur cet iPhone, jamais envoyées.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Automatically finds the names of people you've already named in a previous meeting. Voiceprints are stored only on this iPhone and never sent."
+          }
+        }
+      }
+    },
+    "Retrouver, copier ou réessayer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Find, copy or retry"
+          }
+        }
+      }
+    },
+    "Récentes": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recent"
+          }
+        }
+      }
+    },
+    "Rédaction du rapport…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Writing the report…"
+          }
+        }
+      }
+    },
+    "Réessayer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Try again"
+          }
+        }
+      }
+    },
+    "Réglages": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Settings"
+          }
+        }
+      }
+    },
+    "Réglages › Timbre › Claviers, active « Timbre ».": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Settings › Timbre › Keyboards, turn on “Timbre”."
+          }
+        }
+      }
+    },
+    "Régénérer le rapport": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Regenerate report"
+          }
+        }
+      }
+    },
+    "Réponse inattendue de Groq.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unexpected response from Groq."
+          }
+        }
+      }
+    },
+    "Réponse inattendue du modèle — réessaie.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unexpected response from the model — try again."
+          }
+        }
+      }
+    },
+    "Rétablir les instructions par défaut": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restore default instructions"
+          }
+        }
+      }
+    },
+    "Rétablir par défaut": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restore default"
+          }
+        }
+      }
+    },
+    "Réunion du %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Meeting on %@"
+          }
+        }
+      }
+    },
+    "Réunions": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Meetings"
+          }
+        }
+      }
+    },
+    "Réunions transcrites": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Transcribed meetings"
+          }
+        }
+      }
+    },
+    "S'applique aux dictées et aux réunions. La détection automatique est moins fiable sur les phrases courtes.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Applies to dictations and meetings. Automatic detection is less reliable on short sentences."
+          }
+        }
+      }
+    },
+    "Sous-titres (.srt)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Subtitles (.srt)"
+          }
+        }
+      }
+    },
+    "Stockée dans le Trousseau, jamais dans les réglages de l'app ni dans les journaux.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stored in the Keychain, never in app settings or logs."
+          }
+        }
+      }
+    },
+    "Structure le compte rendu ainsi : 1) Résumé en 3 à 5 phrases ; 2) Points clés par sujet ; 3) Décisions prises ; 4) Actions à mener (qui, quoi, échéance si elle est citée) ; 5) Questions restées ouvertes. Reste factuel et concis.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Structure the report like this: 1) Summary in 3 to 5 sentences; 2) Key points by topic; 3) Decisions made; 4) Action items (who, what, deadline if mentioned); 5) Open questions. Stay factual and concise."
+          }
+        }
+      }
+    },
+    "Supprimer toutes les empreintes vocales": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete all voiceprints"
+          }
+        }
+      }
+    },
+    "Supprimer toutes les empreintes vocales ?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete all voiceprints?"
+          }
+        }
+      }
+    },
+    "Terminer et transcrire": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Finish and transcribe"
+          }
+        }
+      }
+    },
+    "Terminer l'enregistrement ?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Finish recording?"
+          }
+        }
+      }
+    },
+    "Terminé": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Done"
+          }
+        }
+      }
+    },
+    "Texte uniquement, stocké sur cet iPhone. Permet de retrouver une dictée et alimente le bouton « Dernière dictée » du clavier. Désactiver efface aussi la dernière dictée du clavier.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Text only, stored on this iPhone. Lets you find a dictation again and powers the keyboard's “Last dictation” button. Turning it off also erases the keyboard's last dictation."
+          }
+        }
+      }
+    },
+    "Timbre": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Timbre"
+          }
+        }
+      }
+    },
+    "Timbre mémorisera une empreinte numérique de la voix des personnes que tu nommes dans tes réunions, uniquement sur cet iPhone, pour proposer leur nom la prochaine fois. C'est une donnée biométrique : prévois d'informer les participants et d'obtenir leur accord. Tu peux tout supprimer à tout moment.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Timbre will remember a digital voiceprint of the people you name in your meetings, only on this iPhone, to suggest their name next time. This is biometric data: plan to inform the participants and get their agreement. You can delete everything at any time."
+          }
+        }
+      }
+    },
+    "Toucher pour arrêter": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tap to stop"
+          }
+        }
+      }
+    },
+    "Toucher pour démarrer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tap to start"
+          }
+        }
+      }
+    },
+    "Tout effacer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clear all"
+          }
+        }
+      }
+    },
+    "Tout supprimer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete all"
+          }
+        }
+      }
+    },
+    "Transcript": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Transcript"
+          }
+        }
+      }
+    },
+    "Transcript (texte)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Transcript (text)"
+          }
+        }
+      }
+    },
+    "Transcription (%lld/%lld)…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Transcribing (%lld/%lld)…"
+          }
+        }
+      }
+    },
+    "Transcription de réunion": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Meeting transcription"
+          }
+        }
+      }
+    },
+    "Transcription en cours…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Transcribing…"
+          }
+        }
+      }
+    },
+    "Trop de requêtes envoyées à Groq — réessaie dans un instant, ou choisis le modèle rapide dans les réglages.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Too many requests sent to Groq — try again in a moment, or pick the fast model in Settings."
+          }
+        }
+      }
+    },
+    "Trop de requêtes envoyées à Groq — réessaie dans un instant.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Too many requests sent to Groq — try again in a moment."
+          }
+        }
+      }
+    },
+    "Télécharger le modèle de diarisation": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Download the diarization model"
+          }
+        }
+      }
+    },
+    "Télécharger sur Wi-Fi (~500 Mo)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Download over Wi-Fi (~500 MB)"
+          }
+        }
+      }
+    },
+    "Une coupure audio système (appel, Siri, alarme...) a arrêté l'enregistrement. Transcription de ce qui a été capturé jusque-là.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A system audio interruption (call, Siri, alarm…) stopped the recording. Transcribing what was captured so far."
+          }
+        }
+      }
+    },
+    "Une empreinte est une suite de nombres calculée à partir de la voix, stockée uniquement sur cet iPhone. Glisse vers la gauche pour oublier une voix.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A voiceprint is a series of numbers computed from a voice, stored only on this iPhone. Swipe left to forget a voice."
+          }
+        }
+      }
+    },
+    "Vocabulaire personnalisé": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Custom vocabulary"
+          }
+        }
+      }
+    },
+    "Voix connues": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Known voices"
+          }
+        }
+      }
+    },
+    "Voix reconnues automatiquement : %lld — touche un nom pour le corriger.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Voices recognized automatically: %lld — tap a name to correct it."
+          }
+        }
+      }
+    },
+    "Vérification…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Checking…"
+          }
+        }
+      }
+    },
+    "[transcription indisponible]": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "[transcription unavailable]"
+          }
+        }
+      }
+    },
+    "À réessayer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "To retry"
+          }
+        }
+      }
+    },
+    "Échec de la transcription de la réunion.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Meeting transcription failed."
+          }
+        }
+      }
+    },
+    "Échec du téléchargement": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Download failed"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

@@ -3,6 +3,21 @@ import Foundation
 /// Une réunion transcrite, persistée — voir `MeetingHistoryStore`. Ne garde
 /// que le transcript (`turns`), jamais l'audio : ADR-0005 ne prévoit pas de
 /// conserver l'enregistrement au-delà du pipeline, seulement son résultat.
+/// Compte rendu généré par un LLM à partir du transcript. On garde les
+/// instructions utilisées pour que « régénérer » parte de la même base, et
+/// pour que le lecteur sache comment le rapport a été produit.
+public struct MeetingReport: Sendable, Equatable, Codable {
+    public var text: String
+    public let generatedAt: Date
+    public let instructions: String
+
+    public init(text: String, generatedAt: Date = Date(), instructions: String) {
+        self.text = text
+        self.generatedAt = generatedAt
+        self.instructions = instructions
+    }
+}
+
 public struct MeetingRecord: Sendable, Equatable, Codable, Identifiable {
     public let id: UUID
     public let recordedAt: Date
@@ -16,15 +31,21 @@ public struct MeetingRecord: Sendable, Equatable, Codable, Identifiable {
     /// réunions, seulement par réunion.
     public var speakerNames: [String: String]
 
+    /// `nil` tant qu'aucun rapport n'a été généré — et pour les réunions
+    /// enregistrées avant l'introduction des rapports (décodage JSON tolérant).
+    public var report: MeetingReport?
+
     public init(
         id: UUID = UUID(),
         recordedAt: Date = Date(),
         turns: [SpeakerTurn],
-        speakerNames: [String: String] = [:]
+        speakerNames: [String: String] = [:],
+        report: MeetingReport? = nil
     ) {
         self.id = id
         self.recordedAt = recordedAt
         self.turns = turns
         self.speakerNames = speakerNames
+        self.report = report
     }
 }

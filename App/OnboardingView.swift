@@ -21,7 +21,7 @@ struct OnboardingChecklistCard: View {
                 Text("Configure Timbre")
                     .font(.timbreTitle(18))
                     .foregroundStyle(Color.timbreTextPrimary)
-                Text("\(progress.completedCount) étape\(progress.completedCount > 1 ? "s" : "") sur 4")
+                Text("Progression : \(progress.completedCount)/4")
                     .font(.timbreCaption())
                     .foregroundStyle(Color.timbreTextSecondary)
             }
@@ -50,7 +50,7 @@ struct OnboardingChecklistCard: View {
             step(
                 done: progress.firstDictationDone,
                 title: "Fais une première dictée",
-                detail: "Dans n'importe quelle app, maintiens 🌐 pour choisir Timbre, puis touche « Dicter ». Reviens ensuite à ton app manuellement.",
+                detail: "Dans n'importe quelle app, maintiens la touche globe pour choisir Timbre, puis touche « Dicter ». Reviens ensuite à ton app manuellement.",
                 actionTitle: nil,
                 action: {}
             )
@@ -61,9 +61,9 @@ struct OnboardingChecklistCard: View {
     @ViewBuilder
     private func step(
         done: Bool,
-        title: String,
-        detail: String,
-        actionTitle: String?,
+        title: LocalizedStringKey,
+        detail: LocalizedStringKey,
+        actionTitle: LocalizedStringKey?,
         action: @escaping () -> Void
     ) -> some View {
         HStack(alignment: .top, spacing: 12) {
@@ -89,7 +89,7 @@ struct OnboardingChecklistCard: View {
             }
             Spacer(minLength: 0)
         }
-        .accessibilityElement(children: .contain)
-        .accessibilityLabel(done ? "\(title), terminé" : title)
+        .accessibilityElement(children: .combine)
+        .accessibilityValue(done ? Text("Terminé") : Text(""))
     }
 }

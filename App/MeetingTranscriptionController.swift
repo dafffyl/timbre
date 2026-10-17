@@ -29,7 +29,7 @@ final class MeetingTranscriptionController {
         /// remplacé par un marqueur (voir ADR-0005, cas limite 1 révisé) —
         /// permet d'afficher un avertissement ponctuel, le marqueur lui-même
         /// reste visible dans `turns` de toute façon.
-        case done(turns: [SpeakerTurn], hadMissingChunks: Bool)
+        case done(turns: [SpeakerTurn], hadMissingChunks: Bool, speakerVoices: [SpeakerID: SpeakerVoice])
         case failed(String)
         /// Pipeline interrompu (vue quittée, tâche annulée) : ni échec ni
         /// résultat — l'appelant doit conserver l'audio.
@@ -81,20 +81,21 @@ final class MeetingTranscriptionController {
             case .ready:
                 break
             case .needsConsent, .needsWiFi:
-                state = .failed("Les modèles d'analyse des locuteurs ne sont pas installés — prépare-les dans les réglages (Wi-Fi requis). L'enregistrement est conservé.")
+                state = .failed(String(localized: "Les modèles d'analyse des locuteurs ne sont pas installés — prépare-les dans les réglages (Wi-Fi requis). L'enregistrement est conservé."))
                 return
             case .failed:
-                state = .failed("Impossible de préparer l'analyse des locuteurs. L'enregistrement est conservé, réessaie.")
+                state = .failed(String(localized: "Impossible de préparer l'analyse des locuteurs. L'enregistrement est conservé, réessaie."))
                 return
             }
-            async let segmentsTask = diarizationProvider.diarize(audioURL)
+            async let diarizationTask = diarizationProvider.diarizeDetailed(audioURL)
             let (words, hadMissingChunks) = try await transcribeAllChunks(audioURL: audioURL)
-            let segments = try await segmentsTask
+            let diarization = try await diarizationTask
+            let segments = diarization.segments
 
             state = .aligning
             let attributed = SpeakerAlignment.align(words: words, segments: segments)
             let turns = TranscriptFormatter.groupIntoTurns(attributed)
-            state = .done(turns: turns, hadMissingChunks: hadMissingChunks)
+            state = .done(turns: turns, hadMissingChunks: hadMissingChunks, speakerVoices: diarization.speakerVoices)
         } catch is CancellationError {
             state = .cancelled
         } catch TranscriptionError.cancelled {
@@ -154,7 +155,7 @@ final class MeetingTranscriptionController {
         // recouvrement et `TranscriptStitcher` le supprime pour tout chunk
         // autre que le premier.
         let middle = (plan.end - plan.start) / 2
-        return TranscriptionWord(text: "[transcription indisponible]", start: middle, end: middle + 0.1)
+        return TranscriptionWord(text: String(localized: "[transcription indisponible]"), start: middle, end: middle + 0.1)
     }
 
     /// API vérifiée en la faisant tourner réellement (ADR-0005) :
@@ -176,19 +177,19 @@ final class MeetingTranscriptionController {
 
     private static func userMessage(for error: Error) -> String {
         guard let error = error as? TranscriptionError else {
-            return "Échec de la transcription de la réunion."
+            return String(localized: "Échec de la transcription de la réunion.")
         }
         switch error {
         case .missingAPIKey:
-            return "Clé API Groq manquante — configure-la dans les réglages."
+            return String(localized: "Clé API Groq manquante — configure-la dans les réglages.")
         case .network:
-            return "Problème réseau pendant la transcription."
+            return String(localized: "Problème réseau pendant la transcription.")
         case .rateLimited:
-            return "Trop de requêtes envoyées à Groq — réessaie dans un instant."
+            return String(localized: "Trop de requêtes envoyées à Groq — réessaie dans un instant.")
         case .server(let statusCode, _) where statusCode == 401 || statusCode == 403:
-            return "Clé API Groq refusée (code \(statusCode)) — vérifie-la dans les réglages."
+            return String(localized: "Clé API Groq refusée (code \(statusCode)) — vérifie-la dans les réglages.")
         default:
-            return "Erreur pendant la transcription de la réunion."
+            return String(localized: "Erreur pendant la transcription de la réunion.")
         }
     }
 }
