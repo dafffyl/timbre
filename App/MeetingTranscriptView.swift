@@ -86,7 +86,7 @@ struct MeetingTranscriptView: View {
                             .frame(maxWidth: .infinity)
                             .background(Color.timbreCoral.opacity(0.14))
                         }
-                        MeetingHistoryDetailView(record: savedRecord)
+                        MeetingHistoryDetailView(record: savedRecord, autoGenerate: true)
                     }
                 }
             }

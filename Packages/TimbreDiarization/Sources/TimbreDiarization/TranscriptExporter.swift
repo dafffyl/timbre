@@ -5,11 +5,24 @@ import Foundation
 /// app), donc testables sans UI.
 public enum TranscriptExporter {
     /// Titre en `#`, puis un paragraphe par tour avec le locuteur en gras.
-    public static func markdown(turns: [SpeakerTurn], labels: [String], title: String) -> String {
+    /// Si un rapport existe, il précède le transcript, sous deux titres de
+    /// niveau 2 (`reportTitle`, `transcriptTitle`, fournis par l'appelant
+    /// pour rester localisables).
+    public static func markdown(
+        turns: [SpeakerTurn],
+        labels: [String],
+        title: String,
+        report: String? = nil,
+        reportTitle: String = "Rapport",
+        transcriptTitle: String = "Transcript"
+    ) -> String {
         let body = zip(labels, turns)
             .map { label, turn in "**\(label)** :\n\(turn.text)" }
             .joined(separator: "\n\n")
-        return "# \(title)\n\n\(body)\n"
+        guard let report, !report.isEmpty else {
+            return "# \(title)\n\n\(body)\n"
+        }
+        return "# \(title)\n\n## \(reportTitle)\n\n\(report)\n\n## \(transcriptTitle)\n\n\(body)\n"
     }
 
     /// `true` si au moins un tour a des horodatages — sinon (réunion
@@ -68,6 +81,7 @@ extension MeetingRecord {
         guard !trimmed.isEmpty else { return true }
         let options: String.CompareOptions = [.caseInsensitive, .diacriticInsensitive]
         if turns.contains(where: { $0.text.range(of: trimmed, options: options) != nil }) { return true }
+        if report?.text.range(of: trimmed, options: options) != nil { return true }
         return speakerNames.values.contains { $0.range(of: trimmed, options: options) != nil }
     }
 }

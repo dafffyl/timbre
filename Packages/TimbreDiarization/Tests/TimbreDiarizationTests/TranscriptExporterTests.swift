@@ -55,3 +55,26 @@ private let sophie = SpeakerID(rawValue: "S1")
     let turn = try JSONDecoder().decode(SpeakerTurn.self, from: json)
     #expect(turn.start == nil && turn.end == nil)
 }
+
+@Test func markdownPutsReportBeforeTranscript() {
+    let turns = [SpeakerTurn(speaker: sophie, text: "bonjour")]
+    let output = TranscriptExporter.markdown(
+        turns: turns, labels: ["Sophie"], title: "Réunion", report: "Décision : go.",
+        reportTitle: "Rapport", transcriptTitle: "Transcript")
+    #expect(output == "# Réunion\n\n## Rapport\n\nDécision : go.\n\n## Transcript\n\n**Sophie** :\nbonjour\n")
+}
+
+@Test func searchAlsoCoversTheReport() {
+    let record = MeetingRecord(
+        turns: [SpeakerTurn(speaker: sophie, text: "bonjour")],
+        report: MeetingReport(text: "Budget validé", instructions: ""))
+    #expect(record.matches(searchQuery: "budget"))
+}
+
+@Test func recordWithoutReportDecodesFromLegacyJSON() throws {
+    let legacy = MeetingRecord(turns: [SpeakerTurn(speaker: sophie, text: "x")])
+    var object = try JSONSerialization.jsonObject(with: JSONEncoder().encode(legacy)) as! [String: Any]
+    object.removeValue(forKey: "report")
+    let data = try JSONSerialization.data(withJSONObject: object)
+    #expect(try JSONDecoder().decode(MeetingRecord.self, from: data).report == nil)
+}
