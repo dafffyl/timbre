@@ -35,8 +35,12 @@ public actor FluidAudioDiarizationProvider: DiarizationProvider {
     }
 
     public func diarize(_ audioURL: URL) async throws -> [SpeakerSegment] {
+        try await diarizeDetailed(audioURL).segments
+    }
+
+    public func diarizeDetailed(_ audioURL: URL) async throws -> DiarizationOutput {
         let result = try await manager.process(audioURL)
-        return result.segments.map {
+        let segments = result.segments.map {
             // FluidAudio expose des `Float`, `SpeakerSegment` des `TimeInterval`
             // (`Double`, cohérent avec `TranscriptionWord`) — conversion
             // explicite plutôt qu'un changement de type de `SpeakerSegment`
@@ -47,5 +51,16 @@ public actor FluidAudioDiarizationProvider: DiarizationProvider {
                 end: TimeInterval($0.endTimeSeconds)
             )
         }
+
+        // Empreinte par locuteur : moyenne des embeddings de ses segments,
+        // pondérée par leur durée.
+        var voices: [SpeakerID: SpeakerVoice] = [:]
+        for (speakerID, group) in Dictionary(grouping: result.segments, by: { $0.speakerId }) {
+            let items = group.map { (embedding: $0.embedding, weight: max($0.durationSeconds, 0)) }
+            guard let mean = VoiceMath.weightedMean(items) else { continue }
+            let seconds = group.reduce(0) { $0 + TimeInterval(max($1.durationSeconds, 0)) }
+            voices[SpeakerID(rawValue: speakerID)] = SpeakerVoice(embedding: mean, seconds: seconds)
+        }
+        return DiarizationOutput(segments: segments, speakerVoices: voices)
     }
 }

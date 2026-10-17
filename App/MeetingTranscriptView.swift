@@ -19,6 +19,7 @@ struct MeetingTranscriptView: View {
     @State private var controller = MeetingTranscriptionController()
     @State private var savedRecord: MeetingRecord?
     @State private var hadMissingChunks = false
+    @State private var recognizedVoices = 0
     /// Incrémenté par « Réessayer » : relance `.task(id:)` sur le même
     /// fichier audio, conservé tant que le transcript n'est pas sauvegardé.
     @State private var attempt = 0
@@ -86,6 +87,17 @@ struct MeetingTranscriptView: View {
                             .frame(maxWidth: .infinity)
                             .background(Color.timbreCoral.opacity(0.14))
                         }
+                        if recognizedVoices > 0 {
+                            Label(
+                                "\(recognizedVoices) voix reconnue\(recognizedVoices > 1 ? "s" : "") automatiquement — touche un nom pour le corriger.",
+                                systemImage: "person.wave.2.fill"
+                            )
+                            .font(.timbreCaption())
+                            .foregroundStyle(Color.timbreViolet)
+                            .padding(10)
+                            .frame(maxWidth: .infinity)
+                            .background(Color.timbreViolet.opacity(0.14))
+                        }
                         MeetingHistoryDetailView(record: savedRecord, autoGenerate: true)
                     }
                 }
@@ -104,8 +116,14 @@ struct MeetingTranscriptView: View {
             // L'audio n'est supprimé qu'une fois le transcript sauvegardé :
             // en cas d'échec ou d'annulation il est conservé pour permettre
             // un réessai (seul le texte est persisté durablement, ADR-0005).
-            if case .done(let turns, let missingChunks) = controller.state {
-                let record = MeetingRecord(turns: turns)
+            if case .done(let turns, let missingChunks, let voices) = controller.state {
+                var record = MeetingRecord(turns: turns)
+                // Reconnaissance des voix (opt-in) : noms pré-remplis pour
+                // les voix connues, empreintes mémorisées pour la suite.
+                let names = VoiceRecognitionService(store: VoiceStore())
+                    .recognize(meetingID: record.id, voices: voices)
+                record.speakerNames = names
+                recognizedVoices = names.count
                 if !turns.isEmpty {
                     DiarizationEnvironment.historyStore.save(record)
                 }

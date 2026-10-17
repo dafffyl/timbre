@@ -29,7 +29,7 @@ final class MeetingTranscriptionController {
         /// remplacé par un marqueur (voir ADR-0005, cas limite 1 révisé) —
         /// permet d'afficher un avertissement ponctuel, le marqueur lui-même
         /// reste visible dans `turns` de toute façon.
-        case done(turns: [SpeakerTurn], hadMissingChunks: Bool)
+        case done(turns: [SpeakerTurn], hadMissingChunks: Bool, speakerVoices: [SpeakerID: SpeakerVoice])
         case failed(String)
         /// Pipeline interrompu (vue quittée, tâche annulée) : ni échec ni
         /// résultat — l'appelant doit conserver l'audio.
@@ -87,14 +87,15 @@ final class MeetingTranscriptionController {
                 state = .failed("Impossible de préparer l'analyse des locuteurs. L'enregistrement est conservé, réessaie.")
                 return
             }
-            async let segmentsTask = diarizationProvider.diarize(audioURL)
+            async let diarizationTask = diarizationProvider.diarizeDetailed(audioURL)
             let (words, hadMissingChunks) = try await transcribeAllChunks(audioURL: audioURL)
-            let segments = try await segmentsTask
+            let diarization = try await diarizationTask
+            let segments = diarization.segments
 
             state = .aligning
             let attributed = SpeakerAlignment.align(words: words, segments: segments)
             let turns = TranscriptFormatter.groupIntoTurns(attributed)
-            state = .done(turns: turns, hadMissingChunks: hadMissingChunks)
+            state = .done(turns: turns, hadMissingChunks: hadMissingChunks, speakerVoices: diarization.speakerVoices)
         } catch is CancellationError {
             state = .cancelled
         } catch TranscriptionError.cancelled {

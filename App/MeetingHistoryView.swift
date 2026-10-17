@@ -101,6 +101,7 @@ struct MeetingHistoryView: View {
         let visible = filteredRecords
         for index in offsets {
             DiarizationEnvironment.historyStore.delete(id: visible[index].id)
+            VoiceStore().deleteMeetingVoices(meetingID: visible[index].id)
         }
         records = DiarizationEnvironment.historyStore.loadAll()
     }
@@ -335,6 +336,9 @@ struct MeetingHistoryDetailView: View {
         let trimmed = newName.trimmingCharacters(in: .whitespacesAndNewlines)
         record.speakerNames[speaker.rawValue] = trimmed.isEmpty ? nil : trimmed
         DiarizationEnvironment.historyStore.update(record)
+        if !trimmed.isEmpty {
+            VoiceRecognitionService(store: VoiceStore()).learn(name: trimmed, meetingID: record.id, speaker: speaker)
+        }
         renamingSpeaker = nil
     }
 }
