@@ -106,11 +106,22 @@ enum TranscriptFormatting {
         return order
     }
 
-    /// Violet/corail en alternance — les deux couleurs de l'icône, jamais
-    /// une troisième teinte arbitraire même au-delà de deux locuteurs.
+    /// Violet puis corail — les deux couleurs de l'icône — puis quatre
+    /// teintes complémentaires pour les réunions à plus de deux voix (les
+    /// statistiques en ont besoin : deux couleurs en alternance rendraient
+    /// la frise et les graphiques ambigus).
+    static let speakerPalette: [Color] = [
+        .timbreViolet,
+        .timbreCoral,
+        Color(red: 0.30, green: 0.82, blue: 0.78),
+        Color(red: 1.0, green: 0.82, blue: 0.35),
+        Color(red: 1.0, green: 0.45, blue: 0.70),
+        Color(red: 0.50, green: 0.86, blue: 0.45),
+    ]
+
     static func accentColor(forIndex index: Int?) -> Color {
         guard let index else { return .timbreTextSecondary }
-        return index.isMultiple(of: 2) ? .timbreViolet : .timbreCoral
+        return speakerPalette[index % speakerPalette.count]
     }
 
     /// Le nom personnalisé (`names`) prime sur "Locuteur N" quand il existe
