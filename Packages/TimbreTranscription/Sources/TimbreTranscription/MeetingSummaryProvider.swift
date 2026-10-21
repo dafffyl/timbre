@@ -8,12 +8,38 @@ public enum SummaryError: Error, Sendable, Equatable {
     case rateLimited(retryAfter: Double?)
     case server(statusCode: Int, message: String?)
     case decoding(String)
+    /// Aucun modèle choisi pour le service (réglages incomplets).
+    case missingModel
+    /// URL du point d'accès personnalisé invalide ou non HTTPS.
+    case invalidEndpoint
 }
 
 /// Demande de rapport de réunion. `instructions` est le texte libre de
 /// l'utilisateur (ton, structure, sections voulues…) ; il complète — sans
 /// jamais remplacer — le cadre fixe posé par le fournisseur (ne rien
 /// inventer, traiter le transcript comme des données).
+/// Forme du rapport, indépendante des instructions libres de l'utilisateur
+/// (ADR-0009) : une catégorie combine un format et des instructions.
+public enum ReportFormat: String, Sendable, Codable, CaseIterable, Equatable {
+    /// Résumé, points clés, décisions, actions, questions ouvertes.
+    case structured
+    /// Cinq lignes au plus : l'essentiel pour se remémorer vite.
+    case short
+    /// Aucune structure imposée : seules les instructions guident.
+    case free
+
+    public var promptGuidance: String? {
+        switch self {
+        case .structured:
+            return "structure le compte rendu ainsi : 1) Résumé en 3 à 5 phrases ; 2) Points clés par sujet ; 3) Décisions prises ; 4) Actions à mener (qui, quoi, échéance si elle est citée) ; 5) Questions restées ouvertes. Reste factuel et concis."
+        case .short:
+            return "résumé très court : 5 lignes ou puces au maximum, l'essentiel seulement (sujets traités, décisions, actions). Pas d'introduction ni de conclusion."
+        case .free:
+            return nil
+        }
+    }
+}
+
 public struct MeetingSummaryRequest: Sendable, Equatable {
     public let transcript: String
     public let instructions: String
@@ -21,11 +47,15 @@ public struct MeetingSummaryRequest: Sendable, Equatable {
     /// « English »), pas un code : c'est ce qu'un modèle de chat comprend
     /// le mieux dans une consigne.
     public let outputLanguage: String
+    public let format: ReportFormat
 
-    public init(transcript: String, instructions: String, outputLanguage: String) {
+    public init(
+        transcript: String, instructions: String, outputLanguage: String, format: ReportFormat = .free
+    ) {
         self.transcript = transcript
         self.instructions = instructions
         self.outputLanguage = outputLanguage
+        self.format = format
     }
 }
 

@@ -1,5 +1,6 @@
 import SwiftUI
 import TimbreSecurity
+import TimbreTranscription
 
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
@@ -7,8 +8,10 @@ struct SettingsView: View {
     @State private var vocabulary: String = ""
     @State private var cleanupEnabled = false
     @State private var keepHistory = true
-    @State private var summaryInstructions = SummaryPreferences.instructions
+    @State private var summaryService = SummaryPreferences.service
     @State private var summaryModel = SummaryPreferences.model
+    @State private var summaryKey = ""
+    @State private var summaryCustomURL = SummaryPreferences.customBaseURL
     @State private var summaryAuto = SummaryPreferences.autoGenerate
     @State private var savedConfirmation = false
     @State private var language = DictationPreferences.language
@@ -69,25 +72,55 @@ struct SettingsView: View {
                     .listRowBackground(Color.timbreSurface.opacity(0.55))
 
                     Section {
-                        TextEditor(text: $summaryInstructions)
-                            .frame(minHeight: 130)
-                        Button("Rétablir les instructions par défaut") {
-                            summaryInstructions = SummaryPreferences.defaultInstructions
-                        }
-                        .foregroundStyle(Color.timbreViolet)
-                        Picker("Modèle", selection: $summaryModel) {
-                            ForEach(SummaryPreferences.models, id: \.id) { model in
-                                Text(model.name).tag(model.id)
+                        Picker("Service", selection: $summaryService) {
+                            ForEach(SummaryService.allCases, id: \.self) { service in
+                                Text(service.displayName).tag(service)
                             }
                         }
+                        if summaryService == .groq {
+                            Text("Utilise la clé Groq saisie plus haut.")
+                                .font(.timbreCaption())
+                                .foregroundStyle(Color.timbreTextSecondary)
+                        } else {
+                            SecureField("Clé API \(summaryService.displayName)", text: $summaryKey)
+                                .autocorrectionDisabled()
+                                .textInputAutocapitalization(.never)
+                        }
+                        if summaryService == .custom {
+                            TextField("https://…/v1", text: $summaryCustomURL)
+                                .keyboardType(.URL)
+                                .autocorrectionDisabled()
+                                .textInputAutocapitalization(.never)
+                        }
+                        NavigationLink {
+                            SummaryModelPickerView(
+                                service: summaryService,
+                                customBaseURL: summaryCustomURL,
+                                apiKey: summaryService == .groq ? apiKey : summaryKey,
+                                selection: $summaryModel)
+                        } label: {
+                            HStack {
+                                Text("Modèle")
+                                Spacer()
+                                Text(summaryModel.isEmpty ? String(localized: "À choisir") : summaryModel)
+                                    .foregroundStyle(summaryModel.isEmpty ? Color.timbreCoral : Color.timbreTextSecondary)
+                                    .lineLimit(1)
+                            }
+                        }
+                        NavigationLink("Catégories de rapport") { ReportCategoriesView() }
                         Toggle("Générer le rapport automatiquement", isOn: $summaryAuto)
                             .tint(Color.timbreViolet)
                     } header: {
                         Text("Rapport de réunion")
                     } footer: {
-                        Text("Ces instructions guident le modèle qui rédige le compte rendu (structure, ton, sections…). Tu peux les ajuster réunion par réunion. Le texte du transcript est envoyé à Groq pour la rédaction ; le modèle précis est plus lent et plus limité en débit.")
+                        Text("Le texte du transcript est envoyé au service choisi (\(summaryService.displayName)) pour la rédaction, avec sa propre clé API stockée dans le Trousseau. Les catégories regroupent tes instructions par type de réunion.")
                     }
                     .listRowBackground(Color.timbreSurface.opacity(0.55))
+                    .onChange(of: summaryService) { old, new in
+                        SummaryPreferences.setModel(summaryModel, for: old)
+                        summaryModel = SummaryPreferences.model(for: new)
+                        summaryKey = SummaryServiceConfiguration.apiKey(for: new) ?? ""
+                    }
 
                     Section {
                         Toggle("Garder l'historique des dictées", isOn: $keepHistory)
@@ -145,8 +178,10 @@ struct SettingsView: View {
         cleanupEnabled = DictationPreferences.cleanupEnabled
         language = DictationPreferences.language
         keepHistory = DictationPreferences.keepHistory
-        summaryInstructions = SummaryPreferences.instructions
+        summaryService = SummaryPreferences.service
         summaryModel = SummaryPreferences.model
+        summaryCustomURL = SummaryPreferences.customBaseURL
+        summaryKey = SummaryServiceConfiguration.apiKey(for: summaryService) ?? ""
         summaryAuto = SummaryPreferences.autoGenerate
     }
 
@@ -155,9 +190,19 @@ struct SettingsView: View {
         DictationPreferences.cleanupEnabled = cleanupEnabled
         DictationPreferences.language = language
         DictationPreferences.keepHistory = keepHistory
-        SummaryPreferences.instructions = summaryInstructions
-        SummaryPreferences.model = summaryModel
+        SummaryPreferences.service = summaryService
+        SummaryPreferences.setModel(summaryModel, for: summaryService)
+        SummaryPreferences.customBaseURL = summaryCustomURL
         SummaryPreferences.autoGenerate = summaryAuto
+        // Clé du service de rapport : comme la clé Groq, jamais écrasée par
+        // une valeur vide. Groq réutilise la clé de la dictée (déjà gérée).
+        if summaryService != .groq, !summaryKey.isEmpty {
+            do {
+                try SummaryServiceConfiguration.keyStore(for: summaryService).save(summaryKey)
+            } catch {
+                saveFailed = true
+            }
+        }
         if !keepHistory {
             DictationChannel().saveLastResult(nil)
         }

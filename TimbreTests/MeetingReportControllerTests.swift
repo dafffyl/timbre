@@ -33,12 +33,15 @@ struct MeetingReportControllerTests {
     @Test func successStoresReportWithInstructions() async {
         let store = FakeStore()
         let controller = MeetingReportController(
-            provider: { _ in FakeSummarizer(result: .success("## Rapport")) }, store: store)
+            provider: { FakeSummarizer(result: .success("## Rapport")) }, store: store)
 
-        let updated = await controller.generate(for: record, instructions: "Court.")
+        let updated = await controller.generate(
+            for: record, instructions: "Court.", format: .short, categoryName: "Résumé court")
 
         #expect(updated?.report?.text == "## Rapport")
         #expect(updated?.report?.instructions == "Court.")
+        #expect(updated?.report?.categoryName == "Résumé court")
+        #expect(updated?.report?.serviceLabel?.isEmpty == false)
         #expect(store.updated.count == 1)
         #expect(controller.state == .idle)
     }
@@ -48,7 +51,7 @@ struct MeetingReportControllerTests {
         withReport.report = MeetingReport(text: "ancien", instructions: "")
         let store = FakeStore()
         let controller = MeetingReportController(
-            provider: { _ in FakeSummarizer(result: .failure(.network("offline"))) }, store: store)
+            provider: { FakeSummarizer(result: .failure(.network("offline"))) }, store: store)
 
         let updated = await controller.generate(for: withReport, instructions: "x")
 
@@ -58,6 +61,23 @@ struct MeetingReportControllerTests {
             Issue.record("État inattendu : \(controller.state)")
             return
         }
+    }
+
+    @Test func providerConfigurationErrorsBecomeMessages() async {
+        let controller = MeetingReportController(
+            provider: { throw SummaryError.missingModel }, store: FakeStore())
+        let updated = await controller.generate(for: record, instructions: "")
+        #expect(updated == nil)
+        #expect(controller.state == .failed(MeetingReportController.message(for: SummaryError.missingModel)))
+    }
+
+    @Test func notFoundExplainsTheModelMayBeRetired() {
+        let message = MeetingReportController.message(
+            for: SummaryError.server(statusCode: 404, message: nil), service: .groq)
+        #expect(message.contains("Modèle introuvable"))
+        #expect(message.contains("Groq"))
+        let anthropic = MeetingReportController.message(for: SummaryError.missingAPIKey, service: .anthropic)
+        #expect(anthropic.contains("Claude"))
     }
 
     @Test func markdownLineParsing() {
