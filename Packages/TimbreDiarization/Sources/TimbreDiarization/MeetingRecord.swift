@@ -10,11 +10,20 @@ public struct MeetingReport: Sendable, Equatable, Codable {
     public var text: String
     public let generatedAt: Date
     public let instructions: String
+    /// Catégorie et service/modèle utilisés (ADR-0009). `nil` pour les
+    /// rapports générés avant leur introduction (décodage JSON tolérant).
+    public let categoryName: String?
+    public let serviceLabel: String?
 
-    public init(text: String, generatedAt: Date = Date(), instructions: String) {
+    public init(
+        text: String, generatedAt: Date = Date(), instructions: String,
+        categoryName: String? = nil, serviceLabel: String? = nil
+    ) {
         self.text = text
         self.generatedAt = generatedAt
         self.instructions = instructions
+        self.categoryName = categoryName
+        self.serviceLabel = serviceLabel
     }
 }
 

@@ -5,6 +5,7 @@
 
 import SwiftUI
 import TimbreDiarization
+import TimbreTranscription
 
 /// `NavigationStack` propre (comme `DiarizationSetupView`) pour fonctionner
 /// correctement présenté en `.sheet` depuis `ContentView`.
@@ -116,8 +117,14 @@ struct MeetingHistoryDetailView: View {
     @State private var newName = ""
     @State private var tab: Tab = .transcript
     @State private var reportController = MeetingReportController()
-    @State private var instructions = SummaryPreferences.instructions
+    @State private var categories = ReportCategoryStore.shared.categories
+    @State private var categoryID = ReportCategoryStore.shared.selected.id
+    @State private var instructions = ReportCategoryStore.shared.selected.instructions
     @State private var copiedReport = false
+
+    private var category: ReportCategory {
+        categories.first { $0.id == categoryID } ?? categories[0]
+    }
 
     /// `true` pour un transcript tout juste produit : génère le rapport
     /// d'office si l'utilisateur l'a demandé dans les réglages.
@@ -126,7 +133,8 @@ struct MeetingHistoryDetailView: View {
     init(record: MeetingRecord, autoGenerate: Bool = false) {
         _record = State(initialValue: record)
         self.autoGenerate = autoGenerate
-        _instructions = State(initialValue: record.report?.instructions ?? SummaryPreferences.instructions)
+        _instructions = State(
+            initialValue: record.report?.instructions ?? ReportCategoryStore.shared.selected.instructions)
     }
 
     var body: some View {
@@ -212,7 +220,7 @@ struct MeetingHistoryDetailView: View {
                 if let report = record.report {
                     MarkdownReportText(markdown: report.text)
                         .timbreCard()
-                    Text("Généré le \(report.generatedAt.formatted(date: .abbreviated, time: .shortened))")
+                    Text(generatedCaption(for: report))
                         .font(.timbreCaption())
                         .foregroundStyle(Color.timbreTextSecondary)
                     HStack(spacing: 12) {
@@ -227,12 +235,14 @@ struct MeetingHistoryDetailView: View {
                         Text("Pas encore de rapport")
                             .font(.timbreTitle(16))
                             .foregroundStyle(Color.timbreTextPrimary)
-                        Text("Le texte du transcript est envoyé à Groq (même clé que la transcription) pour rédiger un compte rendu selon tes instructions.")
+                        Text("Le texte du transcript est envoyé à \(SummaryPreferences.service.displayName) pour rédiger un compte rendu selon la catégorie choisie. Service et modèle se règlent dans les réglages.")
                             .font(.timbreCaption())
                             .foregroundStyle(Color.timbreTextSecondary)
                     }
                     .timbreCard()
                 }
+
+                categoryPicker
 
                 instructionsEditor
 
@@ -243,6 +253,38 @@ struct MeetingHistoryDetailView: View {
                 .disabled(reportController.state == .generating)
             }
             .padding(20)
+        }
+    }
+
+    private func generatedCaption(for report: MeetingReport) -> String {
+        var parts = [
+            String(
+                localized: "Généré le \(report.generatedAt.formatted(date: .abbreviated, time: .shortened))")
+        ]
+        if let name = report.categoryName { parts.append(name) }
+        if let service = report.serviceLabel { parts.append(service) }
+        return parts.joined(separator: " · ")
+    }
+
+    private var categoryPicker: some View {
+        HStack {
+            Text("Catégorie")
+                .font(.timbreLabel(15))
+                .foregroundStyle(Color.timbreTextPrimary)
+            Spacer()
+            Picker("Catégorie", selection: $categoryID) {
+                ForEach(categories) { category in
+                    Text(category.name).tag(category.id)
+                }
+            }
+            .pickerStyle(.menu)
+            .tint(Color.timbreViolet)
+        }
+        .timbreCard()
+        .onAppear { categories = ReportCategoryStore.shared.categories }
+        .onChange(of: categoryID) {
+            instructions = category.instructions
+            ReportCategoryStore.shared.select(categoryID)
         }
     }
 
@@ -257,12 +299,15 @@ struct MeetingHistoryDetailView: View {
                     .background(Color.white.opacity(0.06))
                     .clipShape(RoundedRectangle(cornerRadius: 10))
                 HStack {
-                    Button("Rétablir par défaut") {
-                        instructions = SummaryPreferences.defaultInstructions
+                    Button("Rétablir celles de la catégorie") {
+                        instructions = category.instructions
                     }
                     Spacer()
-                    Button("Enregistrer comme réglage") {
-                        SummaryPreferences.instructions = instructions
+                    Button("Enregistrer dans la catégorie") {
+                        var updated = category
+                        updated.instructions = instructions
+                        ReportCategoryStore.shared.update(updated)
+                        categories = ReportCategoryStore.shared.categories
                     }
                 }
                 .font(.timbreCaption())
@@ -270,7 +315,7 @@ struct MeetingHistoryDetailView: View {
             }
             .padding(.top, 8)
         } label: {
-            Text("Instructions pour ce rapport")
+            Text("Instructions complémentaires (\(ReportCategory.formatName(category.format)))")
                 .font(.timbreLabel(15))
                 .foregroundStyle(Color.timbreTextPrimary)
         }
@@ -278,7 +323,10 @@ struct MeetingHistoryDetailView: View {
     }
 
     private func generateReport() async {
-        if let updated = await reportController.generate(for: record, instructions: instructions) {
+        let used = category
+        if let updated = await reportController.generate(
+            for: record, instructions: instructions, format: used.format, categoryName: used.name)
+        {
             record = updated
             copiedReport = false
         }
