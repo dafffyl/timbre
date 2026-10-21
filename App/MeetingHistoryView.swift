@@ -110,6 +110,12 @@ struct MeetingHistoryDetailView: View {
     @State private var record: MeetingRecord
     @State private var renamingSpeaker: SpeakerID?
     @State private var newName = ""
+    @State private var mode: Mode = .transcript
+
+    private enum Mode: Hashable { case transcript, stats }
+
+    /// `nil` tant que le transcript n'a pas de mot (rien à compter).
+    private var stats: MeetingStats? { MeetingStats.compute(turns: record.turns) }
 
     init(record: MeetingRecord) {
         _record = State(initialValue: record)
@@ -118,14 +124,34 @@ struct MeetingHistoryDetailView: View {
     var body: some View {
         ZStack {
             AuroraBackground()
-            TranscriptTurnsView(
-                turns: record.turns,
-                names: record.speakerNames,
-                onTapSpeaker: { speaker in
-                    renamingSpeaker = speaker
-                    newName = record.speakerNames[speaker.rawValue] ?? ""
+            VStack(spacing: 0) {
+                if stats != nil {
+                    Picker(statsText("stats.tab.picker"), selection: $mode) {
+                        Text(statsText("stats.tab.transcript")).tag(Mode.transcript)
+                        Text(statsText("stats.tab.stats")).tag(Mode.stats)
+                    }
+                    .pickerStyle(.segmented)
+                    .padding(.horizontal, 20)
+                    .padding(.top, 8)
                 }
-            )
+                if mode == .stats, let stats {
+                    MeetingStatsView(
+                        stats: stats,
+                        labels: speakerLabels(),
+                        order: TranscriptFormatting.speakerOrder(in: record.turns),
+                        recordedAt: record.recordedAt
+                    )
+                } else {
+                    TranscriptTurnsView(
+                        turns: record.turns,
+                        names: record.speakerNames,
+                        onTapSpeaker: { speaker in
+                            renamingSpeaker = speaker
+                            newName = record.speakerNames[speaker.rawValue] ?? ""
+                        }
+                    )
+                }
+            }
         }
         .preferredColorScheme(.dark)
         .navigationTitle(record.recordedAt.formatted(date: .abbreviated, time: .shortened))
@@ -148,6 +174,15 @@ struct MeetingHistoryDetailView: View {
             Button("Enregistrer") { saveRename() }
             Button("Annuler", role: .cancel) { renamingSpeaker = nil }
         }
+    }
+
+    private func speakerLabels() -> [SpeakerID: String] {
+        let labels = TranscriptFormatting.displayLabels(for: record.turns, names: record.speakerNames)
+        var result: [SpeakerID: String] = [:]
+        for (turn, label) in zip(record.turns, labels) {
+            if let speaker = turn.speaker { result[speaker] = label }
+        }
+        return result
     }
 
     private var exportMenu: some View {
