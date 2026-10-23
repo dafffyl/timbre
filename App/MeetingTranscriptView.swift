@@ -111,6 +111,9 @@ struct MeetingTranscriptView: View {
                 }
                 hadMissingChunks = missingChunks
                 savedRecord = record
+                #if DEBUG
+                DebugAudioRetention.keep(audioURL, meetingID: record.id)
+                #endif
                 try? FileManager.default.removeItem(at: audioURL)
             }
         }
