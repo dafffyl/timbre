@@ -55,6 +55,10 @@ final class BackgroundRecorder: @unchecked Sendable {
 
     private let audioFileBox = OSAllocatedUnfairLock<AVAudioFile?>(initialState: nil)
     private let level = OSAllocatedUnfairLock<Float>(initialState: 0)
+    /// Dernier buffer reçu du micro : sert à détecter un moteur qui se croit
+    /// lancé mais ne produit plus rien (voir `checkHealth()`).
+    private let lastBufferAt = OSAllocatedUnfairLock<Date>(initialState: .distantPast)
+    private var healthRestarts = 0
     private var interruptionObserver: NSObjectProtocol?
     private var configurationObserver: NSObjectProtocol?
 
@@ -98,6 +102,8 @@ final class BackgroundRecorder: @unchecked Sendable {
             throw error
         }
         isEngineRunning = true
+        healthRestarts = 0
+        lastBufferAt.withLock { $0 = Date() }
         AudioSessionUsage.shared.acquire()
         observeInterruptions()
     }
@@ -234,6 +240,39 @@ final class BackgroundRecorder: @unchecked Sendable {
         }
     }
 
+    /// Détecte un moteur arrêté en silence (session désactivée par ailleurs,
+    /// changement de route non notifié…) : `engine.isRunning == false`, ou
+    /// plus aucun buffer du micro depuis `stallThreshold`. iOS ne le signale
+    /// pas toujours — c'est ce qui laissait un chronomètre tourner sur une
+    /// réunion déjà muette. À appeler régulièrement pendant l'enregistrement ;
+    /// tente une relance, et ne déclare l'échec qu'après plusieurs essais.
+    func checkHealth(stallThreshold: TimeInterval = 3) {
+        guard isEngineRunning else { return }
+        let silentFor = Date().timeIntervalSince(lastBufferAt.withLock { $0 })
+        guard !engine.isRunning || silentFor > stallThreshold else { return }
+
+        healthRestarts += 1
+        logger.error(
+            "Moteur audio muet (isRunning=\(self.engine.isRunning, privacy: .public), silence \(Int(silentFor), privacy: .public) s) — relance \(self.healthRestarts, privacy: .public)"
+        )
+        guard healthRestarts <= Self.maxHealthRestarts else {
+            fail("le moteur audio ne redémarre pas après \(Self.maxHealthRestarts) essais")
+            return
+        }
+        do {
+            try AVAudioSession.sharedInstance().setActive(true)
+            try configureConverter()
+            installTap()
+            engine.prepare()
+            try engine.start()
+            lastBufferAt.withLock { $0 = Date() }
+        } catch {
+            fail("relance du moteur audio impossible : \(error.localizedDescription)")
+        }
+    }
+
+    private static let maxHealthRestarts = 5
+
     /// Reprise "à chaud" pendant la fenêtre de grâce (voir
     /// `DictationController`) : le moteur tourne déjà, on rouvre juste un
     /// nouveau fichier — aucun besoin de retoucher à la session ni au tap.
@@ -302,6 +341,7 @@ final class BackgroundRecorder: @unchecked Sendable {
     /// du tap audio — la marquer clarifie l'intention plutôt que de laisser
     /// le vérificateur de concurrence deviner.
     nonisolated private func process(buffer: AVAudioPCMBuffer) {
+        lastBufferAt.withLock { $0 = Date() }
         level.withLock { $0 = Self.computeLevel(from: buffer) }
 
         guard let converter, let targetFormat else { return }

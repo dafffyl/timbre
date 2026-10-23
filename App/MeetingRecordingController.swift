@@ -41,6 +41,7 @@ final class MeetingRecordingController {
     private let recorder = BackgroundRecorder()
     private var pollTimer: Timer?
     private var startedAt: Date?
+    private var lastHealthCheck = Date()
 
     func start() async {
         let allowed = await requestMicrophonePermission()
@@ -58,6 +59,7 @@ final class MeetingRecordingController {
             self?.handleUnrecoverableInterruption()
         }
         startedAt = Date()
+        lastHealthCheck = Date()
         elapsed = 0
         state = .recording
         startPolling()
@@ -99,6 +101,13 @@ final class MeetingRecordingController {
         guard let startedAt else { return }
         elapsed = Date().timeIntervalSince(startedAt)
         audioLevel = recorder.currentLevel
+        // Une fois par seconde : un moteur arrêté en silence se relance
+        // (voir `BackgroundRecorder.checkHealth`), sinon la réunion
+        // s'arrête proprement au lieu de continuer à compter dans le vide.
+        if Date().timeIntervalSince(lastHealthCheck) >= 1 {
+            lastHealthCheck = Date()
+            recorder.checkHealth()
+        }
         if elapsed > Self.maxRecordingDuration {
             // Même chemin qu'une interruption : la vue bascule vers la
             // transcription du fichier plutôt que de le jeter en silence.
