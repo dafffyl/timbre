@@ -170,3 +170,12 @@ Vit dans `TimbreDiarization` (opère sur `AttributedWord`, déjà là-bas).
 
 `docs/adr/0003-alignement-diarisation-et-chunking.md`,
 `docs/adr/0004-integration-fluidaudio.md`
+
+## Exception Debug (2026-10-23)
+
+Dans les builds **Debug** uniquement (`#if DEBUG`, jamais Release), l'audio
+d'une réunion est copié dans `Documents/DebugRecordings` avant sa suppression
+(`DebugAudioRetention`), pour mesurer la qualité de la diarisation sur de
+vrais enregistrements. Exclu des sauvegardes, récupéré seulement avec l'accord
+de l'utilisateur, à supprimer après usage. L'invariant « jamais l'audio »
+reste vrai pour tout build distribué.
