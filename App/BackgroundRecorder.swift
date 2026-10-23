@@ -6,6 +6,8 @@
 @preconcurrency import AVFoundation
 import os
 
+private let logger = Logger(subsystem: "fr.dafffyl.timbre", category: "recorder")
+
 /// Enregistre via `AVAudioEngine` plutôt que `AVAudioRecorder` — seule façon
 /// de garder le contrôle programmatique nécessaire pour lire l'App Group à
 /// intervalles réguliers pendant l'enregistrement (voir `DictationController`),
@@ -46,8 +48,17 @@ final class BackgroundRecorder: @unchecked Sendable {
     /// seulement quelques échanges.
     var onUnrecoverableInterruption: (() -> Void)?
 
+    /// Cause technique de la dernière coupure irrécupérable, pour l'afficher
+    /// et la journaliser (jamais de contenu audio ni transcrit). `nil` si
+    /// aucune.
+    private(set) var lastFailure: String?
+
     private let audioFileBox = OSAllocatedUnfairLock<AVAudioFile?>(initialState: nil)
     private let level = OSAllocatedUnfairLock<Float>(initialState: 0)
+    /// Dernier buffer reçu du micro : sert à détecter un moteur qui se croit
+    /// lancé mais ne produit plus rien (voir `checkHealth()`).
+    private let lastBufferAt = OSAllocatedUnfairLock<Date>(initialState: .distantPast)
+    private var healthRestarts = 0
     private var interruptionObserver: NSObjectProtocol?
     private var configurationObserver: NSObjectProtocol?
 
@@ -70,6 +81,7 @@ final class BackgroundRecorder: @unchecked Sendable {
             return
         }
 
+        lastFailure = nil
         let session = AVAudioSession.sharedInstance()
         try session.setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker])
         try session.setActive(true)
@@ -90,6 +102,9 @@ final class BackgroundRecorder: @unchecked Sendable {
             throw error
         }
         isEngineRunning = true
+        healthRestarts = 0
+        lastBufferAt.withLock { $0 = Date() }
+        AudioSessionUsage.shared.acquire()
         observeInterruptions()
     }
 
@@ -153,9 +168,13 @@ final class BackgroundRecorder: @unchecked Sendable {
         ) { [weak self] notification in
             guard
                 let info = notification.userInfo,
-                let typeValue = info[AVAudioSessionInterruptionTypeKey] as? UInt,
-                AVAudioSession.InterruptionType(rawValue: typeValue) == .ended
+                let typeValue = info[AVAudioSessionInterruptionTypeKey] as? UInt
             else { return }
+            if AVAudioSession.InterruptionType(rawValue: typeValue) == .began {
+                let reasonValue = info[AVAudioSessionInterruptionReasonKey] as? UInt ?? 0
+                logger.notice("Interruption audio commencée (raison \(reasonValue, privacy: .public))")
+                return
+            }
 
             let optionsValue = info[AVAudioSessionInterruptionOptionKey] as? UInt ?? 0
             let shouldResume = AVAudioSession.InterruptionOptions(rawValue: optionsValue).contains(.shouldResume)
@@ -178,8 +197,16 @@ final class BackgroundRecorder: @unchecked Sendable {
             engine.prepare()
             try engine.start()
         } catch {
-            onUnrecoverableInterruption?()
+            fail("changement de configuration audio : \(error.localizedDescription)")
         }
+    }
+
+    /// Journalise la cause et prévient l'appelant (voir
+    /// `onUnrecoverableInterruption`).
+    private func fail(_ reason: String) {
+        logger.error("Enregistrement interrompu — \(reason, privacy: .public)")
+        lastFailure = reason
+        onUnrecoverableInterruption?()
     }
 
     private func removeObservers() {
@@ -202,16 +229,49 @@ final class BackgroundRecorder: @unchecked Sendable {
     private func resumeAfterInterruption(shouldResume: Bool) {
         guard isEngineRunning else { return }
         guard shouldResume else {
-            onUnrecoverableInterruption?()
+            fail("interruption système sans reprise autorisée")
             return
         }
         do {
             try AVAudioSession.sharedInstance().setActive(true)
             try engine.start()
         } catch {
-            onUnrecoverableInterruption?()
+            fail("reprise après interruption impossible : \(error.localizedDescription)")
         }
     }
+
+    /// Détecte un moteur arrêté en silence (session désactivée par ailleurs,
+    /// changement de route non notifié…) : `engine.isRunning == false`, ou
+    /// plus aucun buffer du micro depuis `stallThreshold`. iOS ne le signale
+    /// pas toujours — c'est ce qui laissait un chronomètre tourner sur une
+    /// réunion déjà muette. À appeler régulièrement pendant l'enregistrement ;
+    /// tente une relance, et ne déclare l'échec qu'après plusieurs essais.
+    func checkHealth(stallThreshold: TimeInterval = 3) {
+        guard isEngineRunning else { return }
+        let silentFor = Date().timeIntervalSince(lastBufferAt.withLock { $0 })
+        guard !engine.isRunning || silentFor > stallThreshold else { return }
+
+        healthRestarts += 1
+        logger.error(
+            "Moteur audio muet (isRunning=\(self.engine.isRunning, privacy: .public), silence \(Int(silentFor), privacy: .public) s) — relance \(self.healthRestarts, privacy: .public)"
+        )
+        guard healthRestarts <= Self.maxHealthRestarts else {
+            fail("le moteur audio ne redémarre pas après \(Self.maxHealthRestarts) essais")
+            return
+        }
+        do {
+            try AVAudioSession.sharedInstance().setActive(true)
+            try configureConverter()
+            installTap()
+            engine.prepare()
+            try engine.start()
+            lastBufferAt.withLock { $0 = Date() }
+        } catch {
+            fail("relance du moteur audio impossible : \(error.localizedDescription)")
+        }
+    }
+
+    private static let maxHealthRestarts = 5
 
     /// Reprise "à chaud" pendant la fenêtre de grâce (voir
     /// `DictationController`) : le moteur tourne déjà, on rouvre juste un
@@ -230,13 +290,20 @@ final class BackgroundRecorder: @unchecked Sendable {
 
     /// Arrêt complet : plus de reprise possible sans repasser par `start()`.
     func stop() {
+        let wasRunning = isEngineRunning
         isEngineRunning = false
         removeObservers()
         engine.inputNode.removeTap(onBus: 0)
         engine.stop()
         audioFileBox.withLock { $0 = nil }
         recordedURL = nil
-        try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+        // La session est partagée avec l'autre enregistreur (dictée ↔
+        // réunion) : seul le dernier à s'arrêter la désactive, voir
+        // `AudioSessionUsage`.
+        let isLast = wasRunning ? AudioSessionUsage.shared.release() : AudioSessionUsage.shared.activeCount == 0
+        if isLast {
+            try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+        }
     }
 
     /// Écrit directement en AAC (conteneur `.m4a`) plutôt qu'en PCM brut :
@@ -274,6 +341,7 @@ final class BackgroundRecorder: @unchecked Sendable {
     /// du tap audio — la marquer clarifie l'intention plutôt que de laisser
     /// le vérificateur de concurrence deviner.
     nonisolated private func process(buffer: AVAudioPCMBuffer) {
+        lastBufferAt.withLock { $0 = Date() }
         level.withLock { $0 = Self.computeLevel(from: buffer) }
 
         guard let converter, let targetFormat else { return }
