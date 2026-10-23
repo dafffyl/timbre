@@ -65,7 +65,10 @@ final class MeetingRecordingController {
 
     private func handleUnrecoverableInterruption() {
         guard state == .recording else { return }
-        autoStopMessage = "Une coupure audio système (appel, Siri, alarme...) a arrêté l'enregistrement. Transcription de ce qui a été capturé jusque-là."
+        var message = "Une coupure audio système (appel, Siri, alarme...) a arrêté l'enregistrement. Transcription de ce qui a été capturé jusque-là."
+        // Cause technique, pour qu'un signalement permette de la retrouver.
+        if let detail = recorder.lastFailure { message += "\n\nDétail : \(detail)" }
+        autoStopMessage = message
         autoStoppedURL = stop()
     }
 
