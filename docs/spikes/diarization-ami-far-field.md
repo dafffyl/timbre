@@ -86,6 +86,32 @@ Lecture :
 - Ordre des leviers : qualité de la transcription et de la capture ≫
   chevauchements ≫ moteur de diarisation.
 
+### Comparatif de moteurs : Parakeet TDT v3 (FluidAudio, sur l'appareil) contre Whisper large-v3
+
+Mêmes audio, mêmes références, même diarisation, même alignement ; seule la
+transcription change. Moyennes pondérées par les mots de référence (14 777,
+ou 14 252 une fois les hésitations retirées).
+
+| Moyenne | Whisper | Parakeet v3 | Écart |
+|---|---|---|---|
+| ASR seul, cpWER | 38,3 % | 33,3 % | −5,0 |
+| Chaîne complète, cpWER | 47,7 % | 42,4 % | −5,3 |
+| Chaîne complète, tcpWER | 50,9 % | 45,2 % | −5,7 |
+| *Sans hésitations* : ASR seul, cpWER | 36,3 % | 32,2 % | −4,1 |
+| *Sans hésitations* : chaîne, cpWER | 46,2 % | 41,5 % | −4,7 |
+| *Sans hésitations* : chaîne, tcpWER | 49,5 % | 44,3 % | −5,2 |
+
+- Parakeet est meilleur sur **chacune des 4 réunions**, avec et sans
+  hésitations (la référence contient « uh/um » que Parakeet transcrit et
+  Whisper omet : retirées des deux côtés, l'avantage passe de ~5 à ~4-5 points).
+- Vitesse sur Mac M4 : 7 s pour 14 min d'audio (~120× le temps réel) ; Whisper
+  large-v3 (whisper.cpp, Metal) : 103 s pour la même réunion.
+- Parakeet donne des jetons horodatés avec confiance ; pas de boucle
+  d'hallucination observée (Whisper en a une sans `-mc 0`).
+- **Limites** : anglais, AMI, Mac. Rien n'est mesuré en **français réel**, ni
+  sur iPhone (vitesse, mémoire, chaleur), ni contre l'API Groq elle-même.
+  À confirmer sur l'audio réel avant tout changement de moteur dans l'app.
+
 Piège : `whisper-cli -ml 1 -sow` duplique du texte ; sans `-mc 0`, Whisper boucle
 (×2 de mots). Les deux ont d'abord faussé la mesure.
 

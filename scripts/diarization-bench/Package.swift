@@ -13,6 +13,9 @@ let package = Package(
             name: "diarbench", dependencies: [.product(name: "FluidAudio", package: "FluidAudio")],
             swiftSettings: [.swiftLanguageMode(.v5)]),
         .executableTarget(
+            name: "parakeet", dependencies: [.product(name: "FluidAudio", package: "FluidAudio")],
+            swiftSettings: [.swiftLanguageMode(.v5)]),
+        .executableTarget(
             name: "reassign", dependencies: [.product(name: "FluidAudio", package: "FluidAudio")],
             swiftSettings: [.swiftLanguageMode(.v5)]),
     ]

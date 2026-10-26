@@ -7,6 +7,12 @@ import json, re, sys
 from meeteval.io import SegLST
 from meeteval.wer import cpwer, tcpwer
 
+FILLERS = {'UH', 'UM', 'UHM', 'ERM', 'ER', 'MM', 'MMM', 'HMM', 'HM', 'MHM', 'MMHMM', 'UHHUH', 'MMHM'}
+STRIP_FILLERS = False
+
+def strip_fillers(text):
+    return ' '.join(w for w in text.split() if w.upper().replace('-', '') not in FILLERS)
+
 def norm(w):
     w = re.sub(r"[^A-Za-z0-9' ]", "", w).upper().strip()
     return w
@@ -28,6 +34,20 @@ def whisper_words(path):
             else:
                 out[-1][1] = max(out[-1][1], b, a); out[-1][2] += norm(raw)
     return [tuple(w) for w in out if w[2]]
+
+def parakeet_words(path):
+    """Mots depuis les jetons Parakeet (un jeton qui commence par une espace ou « ▁ » ouvre un mot)."""
+    d = json.load(open(path))
+    out = []
+    for tok in d['tokens']:
+        raw = tok['token']
+        t = norm(raw.replace('\u2581', ' '))
+        if not t: continue
+        if raw.startswith(' ') or raw.startswith('\u2581') or not out:
+            out.append([tok['start'], max(tok['start'], tok['end']), t])
+        else:
+            out[-1][1] = max(out[-1][1], tok['end']); out[-1][2] += t
+    return [tuple(w) for w in out]
 
 def align(words, segs, tol=1.0):
     """Même règle que SpeakerAlignment (recouvrement max, sinon plus proche à ≤ tol s)."""
@@ -53,6 +73,9 @@ def to_seglst(session, words, labels):
             cur['words'] += ' ' + t; cur['end_time'] = b
         else:
             cur = {'session_id': session, 'speaker': l, 'start_time': a, 'end_time': b, 'words': t}; out.append(cur)
+    if STRIP_FILLERS:
+        for seg in out: seg['words'] = strip_fillers(seg['words'])
+        out = [seg for seg in out if seg['words']]
     return out
 
 def score(ref, hyp, name):
@@ -63,19 +86,27 @@ def score(ref, hyp, name):
 
 if __name__ == '__main__':
     allref = json.load(open('ami_ref.seglst.json'))
-    for m in sys.argv[1:]:
-        ref = SegLST([r for r in allref if r['session_id'] == m])
+    asr = 'whisper'
+    args = sys.argv[1:]
+    if args and args[0] in ('whisper', 'parakeet'): asr, args = args[0], args[1:]
+    if args and args[0] == '--sans-hesitations': STRIP_FILLERS, args = True, args[1:]
+    for m in args:
+        ref = [r for r in allref if r['session_id'] == m]
+        if STRIP_FILLERS:
+            ref = [{**r, 'words': strip_fillers(r['words'])} for r in ref]
+            ref = [r for r in ref if r['words']]
+        ref = SegLST(ref)
         refw = [(r['speaker'], r['start_time'], r['end_time']) for r in ref]
-        words = whisper_words(f'whisper_{m}.json')
+        words = whisper_words(f'whisper_{m}.json') if asr == 'whisper' else parakeet_words(f'parakeet_{m}.json')
         dj = json.load(open(f'out_{m}.json'))['variants']['default']
         dsegs = [(s, float(a), float(b)) for s, a, b in dj]
-        print(f"== {m}: {len(words)} mots Whisper")
+        print(f"== {m} [{asr}]: {len(words)} mots")
         # 1) WER pur : tout le monde = un seul locuteur (qualité de la transcription seule)
         ref1 = SegLST([{**r, 'speaker': 'A'} for r in ref])
-        score(ref1, SegLST(to_seglst(m, words, ['A'] * len(words))), "Whisper seul (1 locuteur)")
+        score(ref1, SegLST(to_seglst(m, words, ['A'] * len(words))), f"{asr} seul (1 locuteur)")
         # 2) borne haute : Whisper + diarisation parfaite (locuteur du segment de référence)
         orc = align(words, refw, tol=1.0)
-        score(ref, SegLST(to_seglst(m, words, orc)), "Whisper + diarisation parfaite")
+        score(ref, SegLST(to_seglst(m, words, orc)), f"{asr} + diarisation parfaite")
         # 3) chaîne actuelle : Whisper + FluidAudio + alignement de l'app
         cur = align(words, dsegs, tol=1.0)
         score(ref, SegLST(to_seglst(m, words, cur)), "Chaîne actuelle (Timbre)")

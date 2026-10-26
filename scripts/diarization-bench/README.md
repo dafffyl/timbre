@@ -36,7 +36,10 @@ python3 -m venv venv && venv/bin/pip install meeteval
 venv/bin/python fetch_refs.py                       # ami_ref.seglst.json (API Hugging Face)
 brew install whisper-cpp                            # + models/ggml-large-v3.bin (ggerganov/whisper.cpp)
 ./run_whisper.sh                                    # whisper_<réunion>.json
-venv/bin/python tcpwer_bench.py ES2004a IS1009a TS3003a EN2002a
+venv/bin/python tcpwer_bench.py ES2004a IS1009a TS3003a EN2002a          # Whisper
+.build/release/parakeet ami/$M.Array1-01.wav parakeet_$M.json "$PWD/models/parakeet"   # Parakeet v3 (FluidAudio)
+venv/bin/python tcpwer_bench.py parakeet ES2004a IS1009a TS3003a EN2002a  # Parakeet
+# option --sans-hesitations (après le nom du moteur) : retire « uh/um/mm… » de la référence ET des hypothèses
 ```
 
 `-mc 0` est indispensable : sans lui, whisper-cpp entre en boucle d'hallucination
