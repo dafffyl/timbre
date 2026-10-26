@@ -27,6 +27,21 @@ python3 wordsim.py ami/$M.rttm out_$M.json                                  # at
 python3 eval_extra.py $M                                                    # essai « réassignation par voix »
 ```
 
+### Mesure de bout en bout (tcpWER)
+
+Références AMI (texte + locuteur + temps, jeu de test) et Whisper local :
+
+```bash
+python3 -m venv venv && venv/bin/pip install meeteval
+venv/bin/python fetch_refs.py                       # ami_ref.seglst.json (API Hugging Face)
+brew install whisper-cpp                            # + models/ggml-large-v3.bin (ggerganov/whisper.cpp)
+./run_whisper.sh                                    # whisper_<réunion>.json
+venv/bin/python tcpwer_bench.py ES2004a IS1009a TS3003a EN2002a
+```
+
+`-mc 0` est indispensable : sans lui, whisper-cpp entre en boucle d'hallucination
+sur l'audio distant (le même bloc répété chaque seconde, ×2 de mots).
+
 Le premier lancement télécharge les modèles (~500 Mo, `models/`). `ami/`,
 `models/` et `out_*.json` ne sont pas versionnés.
 
@@ -38,6 +53,9 @@ Le premier lancement télécharge les modèles (~500 Mo, `models/`). `ami/`,
 - `wordsim.py` : « mots » = tranches de 0,3 s de la parole annotée, **hors
   passages où plusieurs personnes parlent** (indécidables par diarisation :
   le transcript les mélange). Ce n'est pas la sortie réelle de Whisper.
+- Whisper : `whisper-cpp` local (poids large-v3, comme Groq) et non l'API
+  Groq réelle ; le texte de référence AMI contient les hésitations (« uh »,
+  « um ») que Whisper omet, ce qui gonfle son WER de quelques points.
 - AMI : anglais, 4 locuteurs autour d'une table, micro en réseau — pas le cas
   « 2 personnes, téléphone posé » ; à compléter avec des enregistrements
   réels (voir `DebugAudioRetention`).

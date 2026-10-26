@@ -59,6 +59,36 @@ Empreinte (`DiarizerManager.extractSpeakerEmbedding`) des zones parlées mais no
 détectées, rattachées au locuteur le plus proche : mots corrects
 +1,9 / 0 / **−2,5** / +0,4 points selon la réunion. Sans gain fiable ; **abandonné**.
 
+## Mesure de bout en bout (tcpWER), 2026-10-26
+
+Chaîne de Timbre (Whisper large-v3 + diarisation FluidAudio + alignement de
+l'app) sur les mêmes 4 réunions, références AMI (jeu de test), outil
+`meeteval`. Trois scénarios isolent la source d'erreur :
+
+| Réunion | Whisper seul (cpWER) | + diarisation parfaite | **Chaîne actuelle** (cpWER / tcpWER) | mots réf. |
+|---|---|---|---|---|
+| ES2004a | 34,1 % | 39,5 % | 43,2 % / 45,9 % | 2 630 |
+| IS1009a | 31,0 % | 37,4 % | 37,8 % / 41,3 % | 1 995 |
+| TS3003a | 37,3 % | 41,2 % | 42,6 % / 47,8 % | 2 531 |
+| EN2002a | 42,0 % | 52,4 % | 53,5 % / 56,1 % | 7 621 |
+| **Moyenne pondérée** | **38,3 %** | **46,2 %** | **47,7 % / 50,9 %** | 14 777 |
+
+Lecture :
+- **La transcription seule coûte ~38 %** en micro distant : c'est le premier
+  poste (biais : le texte de référence contient les « uh/um » que Whisper omet).
+- **Attribuer les mots à des locuteurs coûte +8 points même avec une
+  diarisation parfaite** : les mots dits pendant un chevauchement ne peuvent
+  être donnés qu'à une personne. Limite structurelle d'une chaîne
+  « ASR sur le mélange + diarisation ».
+- **Notre diarisation réelle n'ajoute que 1,5 point (cpWER) / 2,4 points
+  (tcpWER)** à la diarisation parfaite : améliorer le moteur de diarisation a
+  un plafond de gain faible.
+- Ordre des leviers : qualité de la transcription et de la capture ≫
+  chevauchements ≫ moteur de diarisation.
+
+Piège : `whisper-cli -ml 1 -sow` duplique du texte ; sans `-mc 0`, Whisper boucle
+(×2 de mots). Les deux ont d'abord faussé la mesure.
+
 ## Mise en garde
 
 Une première mesure comptait les mots dits pendant un chevauchement de parole
